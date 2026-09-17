@@ -1,0 +1,15 @@
+title = "Fragment level composite rule"
+
+[[rules]]
+id = "primary-rule"
+description = "Primary rule"
+regex = 'password\s*=\s*"([^"]+)"'
+components = [
+  { id = "username-rule" },
+]
+
+[[rules]]
+id = "username-rule"
+description = "Username rule"
+regex = 'username\s*=\s*"([^"]+)"'
+skipReport = true
