@@ -1,4 +1,4 @@
-//go:build scan && !gohs
+//go:build !gohs
 
 package main
 
@@ -23,7 +23,7 @@ func TestEmbeddedScanDatabaseMatchesRules(t *testing.T) {
 		t.Fatal(err)
 	}
 	if strings.TrimSpace(embeddedScanHash) != scandb.Hash(cfg) {
-		t.Fatal("embedded database is stale; run go generate -tags scan .")
+		t.Fatal("embedded database is stale; run go generate .")
 	}
 	pf, err := newPrefilter(cfg)
 	if err != nil {
@@ -92,7 +92,7 @@ keywords = ["CUSTOM_"]
 	}
 }
 
-func TestScanCLIUsesEmbeddedDatabase(t *testing.T) {
+func TestDefaultCLIUsesEmbeddedScanDatabase(t *testing.T) {
 	repo := repository(t)
 	commitFile(t, repo, "config.yml", "token: "+fakeGitHubPAT+"\n", "add fixture")
 	stdout, stderr := cliSplitFindings(t, "scan", repo, "--format=json", "--attribute=false")
@@ -105,5 +105,14 @@ func TestScanCLIUsesEmbeddedDatabase(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("GitHub finding missing: %s", stdout)
+	}
+}
+
+func TestDefaultCLIRejectsCleanBlob(t *testing.T) {
+	repo := repository(t)
+	commitFile(t, repo, "main.go", "package main\nfunc main() {}\n", "add source")
+	stdout, stderr := cliSplit(t, "scan", repo, "--format=json", "--attribute=false")
+	if !strings.Contains(stderr, "prefilter scan-embedded") || len(parseJSONFindings(t, stdout)) != 0 {
+		t.Fatalf("unexpected scan output: stdout=%q stderr=%q", stdout, stderr)
 	}
 }

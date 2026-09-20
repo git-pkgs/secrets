@@ -1,5 +1,3 @@
-//go:build gohs || scan
-
 package main
 
 import (

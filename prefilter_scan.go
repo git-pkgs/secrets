@@ -1,4 +1,4 @@
-//go:build scan && !gohs
+//go:build !gohs
 
 package main
 

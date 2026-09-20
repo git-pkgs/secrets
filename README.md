@@ -6,20 +6,13 @@ occurrence, and attributes findings to commits and paths.
 
 ## Build
 
-Every build requires Go 1.26 or later. The default build has no native
-dependencies and runs each blob through the detector's keyword pass:
+Requires Go 1.26 or later. The default build embeds a compiled pattern
+database for the [git-pkgs/scan](https://github.com/git-pkgs/scan) prefilter
+and uses RE2 through WebAssembly for rule matching. It has no native
+library dependencies:
 
 ```sh
-go build -o secrets .
-```
-
-The `scan` build adds a prefilter that rejects most blobs before full
-detection. It embeds a compiled pattern database for the
-[git-pkgs/scan](https://github.com/git-pkgs/scan) engine and uses RE2 for
-rule matching through WebAssembly, so it also builds without CGo:
-
-```sh
-go build -tags scan -o secrets .
+CGO_ENABLED=0 go build -o secrets .
 ```
 
 The `gohs` build uses a Hyperscan prefilter with the same RE2 rule matching.
@@ -30,8 +23,9 @@ exports `libhs`, such as Hyperscan or VectorScan:
 go build -tags gohs -o secrets .
 ```
 
-The `scan` and `gohs` builds report identical findings; `scan` builds and
-runs anywhere the Go toolchain does.
+Release archives use the default backend and include binaries for Linux,
+macOS, and Windows on amd64 and arm64, plus checksums and a Cosign signature
+bundle for the checksums.
 
 ## Usage
 
@@ -114,22 +108,21 @@ corpus and regenerate the embedded pattern databases with:
 
 ```sh
 go run ./cmd/synccorpus -version <version>
-go generate -tags scan .
+go generate .
 go generate -tags gohs .
 ```
 
-The `scan` build checks the embedded database against the loaded rule
+The default build checks the embedded database against the loaded rule
 configuration at startup and recompiles the patterns when they differ. The
 summary then reports the `scan-compiled` engine instead of `scan-embedded`.
 
 ## Development
 
-Run the default, race, and `scan` suites with:
+Run the default and race suites with:
 
 ```sh
 go test ./...
 go test -race ./...
-go test -tags scan ./...
 ```
 
 The `gohs` suites require the native dependencies described in the build
