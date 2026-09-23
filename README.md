@@ -134,4 +134,4 @@ go test -tags gohs ./...
 
 ## License
 
-Released under the MIT License. See `LICENSE`.
+[MIT](LICENSE).
