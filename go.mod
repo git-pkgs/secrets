@@ -6,7 +6,7 @@ require (
 	github.com/betterleaks/betterleaks v1.8.1
 	github.com/flier/gohs v1.2.3
 	github.com/git-pkgs/history v0.1.0
-	github.com/git-pkgs/magic v0.3.2-0.20260917082124-0c62054ff108
+	github.com/git-pkgs/magic v0.4.0
 	github.com/git-pkgs/sarif v0.1.2
 	github.com/git-pkgs/scan v0.1.0
 	github.com/spf13/cobra v1.10.2

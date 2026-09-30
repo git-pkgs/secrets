@@ -49,8 +49,8 @@ github.com/git-pkgs/go-billy/v6 v6.0.0-alpha.2.0.20260906202738-23c9d86c8d17 h1:
 github.com/git-pkgs/go-billy/v6 v6.0.0-alpha.2.0.20260906202738-23c9d86c8d17/go.mod h1:QGOWN4CzmtRfpFeCw5paG3RJyKdTwsfGASkxBVkIaAU=
 github.com/git-pkgs/history v0.1.0 h1:wRgLNMKomzSbrAtHfzi/ntd17F6jPqdtySmlEtBuq9o=
 github.com/git-pkgs/history v0.1.0/go.mod h1:wZtYwhJsU5LJFLhrw9Lvx4Ue3ESp7+tv4an9KEeVBns=
-github.com/git-pkgs/magic v0.3.2-0.20260917082124-0c62054ff108 h1:567HienE2Ijmnynfx6zRcmuv3TksQd936OwWCxkcgJo=
-github.com/git-pkgs/magic v0.3.2-0.20260917082124-0c62054ff108/go.mod h1:SXOqcsNmbmpZjJZHEEWnwxprbsFvpwWgTAZrgXp4Jm4=
+github.com/git-pkgs/magic v0.4.0 h1:oag0YiKuWOIIKWTKEjS47HYydGawUlfQiU96TwAqFyM=
+github.com/git-pkgs/magic v0.4.0/go.mod h1:SXOqcsNmbmpZjJZHEEWnwxprbsFvpwWgTAZrgXp4Jm4=
 github.com/git-pkgs/sarif v0.1.2 h1:4XN4OukEjrYhUz6kdXjhtjzrwKDcc6AuFnFRY3H6UK4=
 github.com/git-pkgs/sarif v0.1.2/go.mod h1:5I+Oc0unaVewVpNXPcVYrCB2Nw4icSdxiJnC3kmatNM=
 github.com/git-pkgs/scan v0.1.0 h1:m11tjpq1dQcFQ23m1tby/3WEIB94iKeHI8fmcnxzvI0=
