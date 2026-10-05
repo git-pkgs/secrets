@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/betterleaks/betterleaks v1.8.1
 	github.com/flier/gohs v1.2.3
-	github.com/git-pkgs/history v0.1.0
+	github.com/git-pkgs/history v0.1.1
 	github.com/git-pkgs/magic v0.4.0
 	github.com/git-pkgs/sarif v0.1.2
 	github.com/git-pkgs/scan v0.1.0
