@@ -51,8 +51,8 @@ github.com/git-pkgs/history v0.1.1 h1:WZZXMXSaZxU/JboXtiohfPvIv4RNZibPJuNw/BcWSF
 github.com/git-pkgs/history v0.1.1/go.mod h1:wZtYwhJsU5LJFLhrw9Lvx4Ue3ESp7+tv4an9KEeVBns=
 github.com/git-pkgs/magic v0.4.0 h1:oag0YiKuWOIIKWTKEjS47HYydGawUlfQiU96TwAqFyM=
 github.com/git-pkgs/magic v0.4.0/go.mod h1:SXOqcsNmbmpZjJZHEEWnwxprbsFvpwWgTAZrgXp4Jm4=
-github.com/git-pkgs/sarif v0.1.2 h1:4XN4OukEjrYhUz6kdXjhtjzrwKDcc6AuFnFRY3H6UK4=
-github.com/git-pkgs/sarif v0.1.2/go.mod h1:5I+Oc0unaVewVpNXPcVYrCB2Nw4icSdxiJnC3kmatNM=
+github.com/git-pkgs/sarif v0.1.3 h1:VmSWmCBs+YAhjrQT8P/0oHZvf1ew+3YAy/BYJQLlNN8=
+github.com/git-pkgs/sarif v0.1.3/go.mod h1:dxohVtow0t8jXFaJ1g6Lmn2d/POHxXKUukKPQU0/jgs=
 github.com/git-pkgs/scan v0.1.0 h1:m11tjpq1dQcFQ23m1tby/3WEIB94iKeHI8fmcnxzvI0=
 github.com/git-pkgs/scan v0.1.0/go.mod h1:XWlnQFm9NVpqw+ztH9QpZl/3tm252wfj9z6/479pp2c=
 github.com/gitleaks/go-gitdiff v0.9.1 h1:ni6z6/3i9ODT685OLCTf+s/ERlWUNWQF4x1pvoNICw0=
