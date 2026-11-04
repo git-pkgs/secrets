@@ -20,14 +20,14 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/exp/maps"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/detect/codec"
-	"github.com/betterleaks/betterleaks/internal/contextwindow"
-	"github.com/betterleaks/betterleaks/logging"
-	"github.com/betterleaks/betterleaks/regexp"
-	"github.com/betterleaks/betterleaks/report"
-	"github.com/betterleaks/betterleaks/sources"
-	"github.com/betterleaks/betterleaks/sources/scm"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/detect/codec"
+	"github.com/git-pkgs/secrets/betterleaks/internal/contextwindow"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/sources"
+	"github.com/git-pkgs/secrets/betterleaks/sources/scm"
 )
 
 const maxDecodeDepth = 8

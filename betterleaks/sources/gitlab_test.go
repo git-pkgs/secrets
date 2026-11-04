@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/betterleaks/betterleaks/internal/httpclient"
+	"github.com/git-pkgs/secrets/betterleaks/internal/httpclient"
 )
 
 func TestParseGitLabURL(t *testing.T) {

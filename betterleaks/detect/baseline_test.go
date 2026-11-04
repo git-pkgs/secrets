@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 func TestIsNew(t *testing.T) {

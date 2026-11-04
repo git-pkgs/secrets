@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/betterleaks/betterleaks/logging"
 	"github.com/charlievieth/fastwalk"
 	"github.com/fatih/semgroup"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 // TODO: remove this in v9 and have scanTargets yield file sources

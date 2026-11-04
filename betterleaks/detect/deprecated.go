@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/internal/confidence"
-	"github.com/betterleaks/betterleaks/logging"
-	"github.com/betterleaks/betterleaks/report"
-	"github.com/betterleaks/betterleaks/sources"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/internal/confidence"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/sources"
 	"github.com/rs/zerolog"
 )
 

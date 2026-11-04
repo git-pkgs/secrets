@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 func TestSamePath(t *testing.T) {

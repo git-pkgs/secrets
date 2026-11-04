@@ -48,7 +48,7 @@ func main() {
 	if err := syncCorpus(*root, source); err != nil {
 		fail(err)
 	}
-	fmt.Fprintf(os.Stderr, "synccorpus: loaded %s %s; run go generate -tags gohs .\n", source.Module, source.Version)
+	fmt.Fprintf(os.Stderr, "synccorpus: loaded %s %s; run go generate ./scanner and go generate -tags gohs ./scanner\n", source.Module, source.Version)
 }
 
 func downloadCorpus(ctx context.Context, version string) (corpusSource, error) {

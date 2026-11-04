@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/betterleaks/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
 )
 
 const configPath = "../testdata/config/"

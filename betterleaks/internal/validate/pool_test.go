@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -8,8 +9,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/betterleaks/betterleaks/internal/exprruntime"
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/internal/exprruntime"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 func TestPoolDebugMetadata(t *testing.T) {
@@ -36,7 +37,7 @@ func TestPoolDebugMetadata(t *testing.T) {
 	p.Debug = true
 
 	finding := map[string]string{"secret": "secret"}
-	result, err := p.evalWithCaptures(prg, "rule", "secret", finding, nil, nil)
+	result, err := p.evalWithCaptures(context.Background(), prg, "rule", "secret", finding, nil, nil)
 	if err != nil {
 		t.Fatalf("eval: %v", err)
 	}
@@ -53,7 +54,7 @@ func TestPoolDebugMetadata(t *testing.T) {
 		t.Fatalf("resp_body = %v", result.Metadata["resp_body"])
 	}
 
-	if _, err := p.evalWithCaptures(prg, "rule", "secret", finding, nil, nil); err != nil {
+	if _, err := p.evalWithCaptures(context.Background(), prg, "rule", "secret", finding, nil, nil); err != nil {
 		t.Fatalf("second eval: %v", err)
 	}
 	if got := requests.Load(); got != 2 {
@@ -99,7 +100,7 @@ func TestPoolMaxRequestsReturnsNeedsValidationMetadataAndDoesNotCountCacheHits(t
 	defer p.Close()
 	finding := map[string]string{"rule_id": "example-rule", "secret": "secret-a"}
 
-	first, err := p.evalWithCaptures(prg, "example-rule", "secret-a", finding, nil, nil)
+	first, err := p.evalWithCaptures(context.Background(), prg, "example-rule", "secret-a", finding, nil, nil)
 	if err != nil {
 		t.Fatalf("first eval: %v", err)
 	}
@@ -107,7 +108,7 @@ func TestPoolMaxRequestsReturnsNeedsValidationMetadataAndDoesNotCountCacheHits(t
 		t.Fatalf("first status = %q, want valid", first.Status)
 	}
 
-	cached, err := p.evalWithCaptures(prg, "example-rule", "secret-a", finding, nil, nil)
+	cached, err := p.evalWithCaptures(context.Background(), prg, "example-rule", "secret-a", finding, nil, nil)
 	if err != nil {
 		t.Fatalf("cached eval: %v", err)
 	}
@@ -116,7 +117,7 @@ func TestPoolMaxRequestsReturnsNeedsValidationMetadataAndDoesNotCountCacheHits(t
 	}
 
 	finding["secret"] = "secret-b"
-	blocked, err := p.evalWithCaptures(prg, "example-rule", "secret-b", finding, nil, nil)
+	blocked, err := p.evalWithCaptures(context.Background(), prg, "example-rule", "secret-b", finding, nil, nil)
 	if err != nil {
 		t.Fatalf("blocked eval: %v", err)
 	}

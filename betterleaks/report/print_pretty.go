@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/betterleaks/betterleaks/internal/color"
+	"github.com/git-pkgs/secrets/betterleaks/internal/color"
 )
 
 // terminalControlRe matches ANSI escape sequences and zero-width / disruptive

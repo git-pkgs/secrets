@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/git-pkgs/history"
+	"github.com/git-pkgs/secrets/scanner"
 )
 
 func benchmarkRepositories(b *testing.B) []string {
@@ -31,18 +31,13 @@ func benchmarkRepositories(b *testing.B) []string {
 }
 
 func BenchmarkDetectHistory(b *testing.B) {
-	configureRegexpEngine()
 	workers = runtime.GOMAXPROCS(0)
 	maxBlobSize = defaultMaxBlobSize
-	cfg, err := config.Default()
+	scanner, err := scanner.New(context.Background(), scanner.Options{})
 	if err != nil {
 		b.Fatal(err)
 	}
-	detector := newDetector(context.Background(), cfg)
-	prefilter, err := newPrefilter(cfg)
-	if err != nil {
-		b.Fatal(err)
-	}
+	defer func() { _ = scanner.Close() }()
 	for _, path := range benchmarkRepositories(b) {
 		b.Run(filepath.Base(path), func(b *testing.B) {
 			repo, err := history.Open(path)
@@ -53,7 +48,7 @@ func BenchmarkDetectHistory(b *testing.B) {
 			var stats scanStats
 			for b.Loop() {
 				stats = scanStats{}
-				if _, err := detectBlobs(context.Background(), repo, detector, prefilter, nil, &stats); err != nil {
+				if _, err := detectBlobs(context.Background(), repo, scanner, nil, &stats); err != nil {
 					b.Fatal(err)
 				}
 			}

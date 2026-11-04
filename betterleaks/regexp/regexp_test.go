@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/betterleaks/betterleaks/regexp/internal"
+	"github.com/git-pkgs/secrets/betterleaks/regexp/internal"
 )
 
 type countingEngine struct {

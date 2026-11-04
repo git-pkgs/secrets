@@ -17,8 +17,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/betterleaks/betterleaks/internal/sigv4"
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/internal/sigv4"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 const (

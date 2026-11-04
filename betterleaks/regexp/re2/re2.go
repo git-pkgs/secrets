@@ -1,7 +1,7 @@
 package re2
 
 import (
-	"github.com/betterleaks/betterleaks/regexp/internal"
+	"github.com/git-pkgs/secrets/betterleaks/regexp/internal"
 
 	gore2 "github.com/betterleaks/go-re2"
 )

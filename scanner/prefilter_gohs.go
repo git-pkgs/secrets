@@ -1,6 +1,6 @@
 //go:build gohs
 
-package main
+package scanner
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/detect"
-	"github.com/betterleaks/betterleaks/report"
-	"github.com/betterleaks/betterleaks/sources"
 	"github.com/flier/gohs/hyperscan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/detect"
+	"github.com/git-pkgs/secrets/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/sources"
 	"github.com/git-pkgs/secrets/internal/hyperscandb"
 )
 
-//go:generate go run -tags gohs ./cmd/genhsdb -output hyperscan.db
+//go:generate go run -tags gohs ../cmd/genhsdb -output hyperscan.db
 
 //go:embed hyperscan.db
 var embeddedHyperscanDB []byte
@@ -63,27 +63,9 @@ func newPrefilter(cfg *config.Config) (prefilter, error) {
 	}}
 	return prefilter{
 		db: db, pool: pool, engineName: engineName,
-		ruleIDs: hyperscandb.RuleIDs(cfg), locatorIDs: hyperscandb.LocatorRuleIDs(),
+		ruleIDs: hyperscandb.RuleIDs(cfg), locatorIDs: hyperscandb.LocatorRuleIDs(cfg),
 		pathOnlyRules: configuredPathOnlyRules(cfg),
 	}, nil
-}
-
-func (p prefilter) match(data []byte) bool {
-	if p.db == nil {
-		return true
-	}
-	scratch := p.pool.Get().(*hyperscan.Scratch)
-	defer p.pool.Put(scratch)
-	hit := false
-	err := p.db.Scan(data, scratch, func(uint, uint64, uint64, uint, interface{}) error {
-		hit = true
-		return hyperscan.ErrScanTerminated
-	}, nil)
-	return hit || err != nil
-}
-
-func (p prefilter) pathMatch(path string) bool {
-	return matchesPathOnlyRule(p.pathOnlyRules, path)
 }
 
 func (p prefilter) detect(ctx context.Context, d *detect.Detector, data []byte, attributes map[string]string) ([]report.Finding, bool) {

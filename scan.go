@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"os"
 	"runtime"
@@ -11,14 +10,12 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"unicode/utf16"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/detect"
-	"github.com/betterleaks/betterleaks/report"
-	"github.com/betterleaks/betterleaks/sources"
 	"github.com/git-pkgs/history"
-	"github.com/git-pkgs/magic"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/detect"
+	"github.com/git-pkgs/secrets/betterleaks/report"
+	"github.com/git-pkgs/secrets/scanner"
 )
 
 // Finding is one detected secret, optionally attributed to the commit and
@@ -49,19 +46,28 @@ func scanCmd(ctx context.Context, repo string) error {
 	if err := validateScanOptions(); err != nil {
 		return err
 	}
-	configureRegexpEngine()
 	cfg, err := config.Default()
 	if err != nil {
 		return err
 	}
-	d := newDetector(ctx, cfg)
+	var timings *detect.RuleTimingCollector
 	if ruleTimings != "" {
-		d.RuleTimings = detect.NewRuleTimingCollector()
+		timings = detect.NewRuleTimingCollector()
 	}
-	pf, err := newPrefilter(cfg)
+	scanner, err := scanner.New(ctx, scanner.Options{
+		Config: cfg,
+		Validation: detect.ValidationOptions{
+			Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,
+			MaxRequestsPerTarget: validationMaxRequestsPerTarget,
+			RequestsPerSecond:    validationRequestsPerSecond,
+			ValidationEnvVars:    validationEnvVars,
+		},
+		RuleTimings: timings,
+	})
 	if err != nil {
 		return err
 	}
+	defer func() { _ = scanner.Close() }()
 	r, err := history.Open(repo)
 	if err != nil {
 		return err
@@ -89,12 +95,7 @@ func scanCmd(ctx context.Context, repo string) error {
 	if err != nil {
 		return err
 	}
-	var hits detectionHits
-	if validate {
-		hits, err = detectBlobsRun(ctx, r, d, pf, paths, &stats)
-	} else {
-		hits, err = detectBlobs(ctx, r, d, pf, paths, &stats)
-	}
+	hits, err := detectBlobs(ctx, r, scanner, paths, &stats)
 	profileErr := stopCPUProfile()
 	if err != nil {
 		return err
@@ -106,7 +107,7 @@ func scanCmd(ctx context.Context, repo string) error {
 	if err := writeHeapProfile(memProfile); err != nil {
 		return err
 	}
-	if err := writeRuleTimings(ruleTimings, d.RuleTimings); err != nil {
+	if err := writeRuleTimings(ruleTimings, timings); err != nil {
 		return err
 	}
 	stats.hitBlobs, stats.findings = hitStats(hits)
@@ -124,7 +125,7 @@ func scanCmd(ctx context.Context, repo string) error {
 	if err := done(); err != nil {
 		return err
 	}
-	printStats(&stats, pf.engine())
+	printStats(&stats, scanner.Engine())
 	if stats.findings > 0 && findingExitCode != 0 {
 		return findingExitError{code: findingExitCode}
 	}
@@ -200,11 +201,10 @@ func indexBlobPaths(r *history.Repo) (map[string][]string, error) {
 	return paths, err
 }
 
-func detectBlobs(ctx context.Context, r *history.Repo, d *detect.Detector, pf prefilter, paths map[string][]string, stats *scanStats) (detectionHits, error) {
+func detectBlobs(ctx context.Context, r *history.Repo, scanner *scanner.Scanner, paths map[string][]string, stats *scanStats) (detectionHits, error) {
 	hits := make(detectionHits)
 	var mu sync.Mutex
 	var scanned, skipped atomic.Int64
-	skip := d.SkipFunc()
 	total, err := r.WalkBlobs(history.BlobOptions{
 		Workers: workers,
 		Limit:   func(string) int64 { return maxBlobSize },
@@ -213,7 +213,6 @@ func detectBlobs(ctx context.Context, r *history.Repo, d *detect.Detector, pf pr
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		data, binaryContent := prepareBlob(b.Data)
 
 		blobPaths := paths[b.OID]
 		if paths == nil {
@@ -221,36 +220,20 @@ func detectBlobs(ctx context.Context, r *history.Repo, d *detect.Detector, pf pr
 		}
 		matched := false
 		for _, path := range blobPaths {
-			var attributes map[string]string
-			if path != "" {
-				attributes = map[string]string{sources.AttrPath: path}
+			result, err := scanner.Scan(ctx, b.Data, path)
+			if err != nil {
+				return err
 			}
-			if skip != nil && skip(attributes) {
-				continue
-			}
-			findings, candidate := pf.detect(ctx, d, data, attributes)
-			if binaryContent {
-				if len(findings) > 0 {
-					mu.Lock()
-					hits[blobPath{blob: b.OID, path: path}] = findings
-					mu.Unlock()
-				}
-				continue
+			findings, candidate := result.Findings, result.Scanned
+			if len(findings) > 0 {
+				mu.Lock()
+				hits[blobPath{blob: b.OID, path: path}] = findings
+				mu.Unlock()
 			}
 			if !candidate {
 				continue
 			}
 			matched = true
-			if len(findings) == 0 {
-				continue
-			}
-			mu.Lock()
-			hits[blobPath{blob: b.OID, path: path}] = findings
-			mu.Unlock()
-		}
-		if binaryContent {
-			skipped.Add(1)
-			return nil
 		}
 		if !matched {
 			skipped.Add(1)
@@ -315,39 +298,6 @@ func hitStats(hits detectionHits) (int64, int64) {
 		}
 	}
 	return int64(len(blobs)), int64(len(findings))
-}
-
-func newDetector(ctx context.Context, cfg *config.Config) *detect.Detector {
-	opts := detect.ValidationOptions{
-		Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,
-		MaxRequestsPerTarget: validationMaxRequestsPerTarget,
-		RequestsPerSecond:    validationRequestsPerSecond,
-		ValidationEnvVars:    validationEnvVars,
-	}
-	return detect.NewDetectorContext(ctx, cfg, opts)
-}
-
-func prepareBlob(data []byte) ([]byte, bool) {
-	result := magic.Detect(data)
-	if result.Kind == magic.KindBinary {
-		return nil, true
-	}
-	switch result.Encoding {
-	case magic.EncodingUTF16LE:
-		return decodeUTF16(data[2:], binary.LittleEndian), false
-	case magic.EncodingUTF16BE:
-		return decodeUTF16(data[2:], binary.BigEndian), false
-	default:
-		return data, false
-	}
-}
-
-func decodeUTF16(data []byte, order binary.ByteOrder) []byte {
-	units := make([]uint16, len(data)/2)
-	for i := range units {
-		units[i] = order.Uint16(data[i*2:])
-	}
-	return []byte(string(utf16.Decode(units)))
 }
 
 func printStats(s *scanStats, engine string) {

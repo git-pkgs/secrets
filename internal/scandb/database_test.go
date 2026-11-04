@@ -3,8 +3,8 @@ package scandb
 import (
 	"testing"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/git-pkgs/scan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 func TestCompiledRuleIDs(t *testing.T) {

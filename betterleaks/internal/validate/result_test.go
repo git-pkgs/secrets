@@ -3,7 +3,7 @@ package validate
 import (
 	"testing"
 
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 func TestBetterStatusPriority(t *testing.T) {

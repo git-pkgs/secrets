@@ -12,10 +12,10 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	tiktoken "github.com/pkoukk/tiktoken-go"
 
-	"github.com/betterleaks/betterleaks/internal/exprruntime"
-	"github.com/betterleaks/betterleaks/logging"
-	"github.com/betterleaks/betterleaks/regexp"
-	"github.com/betterleaks/betterleaks/version"
+	"github.com/git-pkgs/secrets/betterleaks/internal/exprruntime"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/version"
 )
 
 var (

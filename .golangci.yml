@@ -1,0 +1,12 @@
+version: "2"
+
+linters:
+  exclusions:
+    rules:
+      # Preserve the lint scope of the formerly separate bundled module.
+      - path: ^betterleaks/(config|detect/(detect|tiktokenloader)|internal/(exprruntime|httpclient|words)|report|sources)
+        linters:
+          - errcheck
+          - ineffassign
+          - staticcheck
+          - unused

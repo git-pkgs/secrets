@@ -1,12 +1,12 @@
 //go:build gohs
 
-package main
+package scanner
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/betterleaks/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 	"github.com/git-pkgs/secrets/internal/hyperscandb"
 )
 
@@ -16,6 +16,6 @@ func TestEmbeddedHyperscanDatabaseMatchesRules(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, want := strings.TrimSpace(embeddedHyperscanHash), hyperscandb.Hash(cfg); got != want {
-		t.Fatalf("embedded database hash %q, want %q; run go generate -tags gohs .", got, want)
+		t.Fatalf("embedded database hash %q, want %q; run go generate -tags gohs ./scanner", got, want)
 	}
 }

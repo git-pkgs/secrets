@@ -19,9 +19,9 @@ import (
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/betterleaks/betterleaks/internal/httpclient"
-	"github.com/betterleaks/betterleaks/logging"
-	"github.com/betterleaks/betterleaks/sources/scm"
+	"github.com/git-pkgs/secrets/betterleaks/internal/httpclient"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/sources/scm"
 )
 
 const (

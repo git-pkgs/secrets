@@ -7,9 +7,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/betterleaks/betterleaks/internal/confidence"
-	"github.com/betterleaks/betterleaks/internal/words"
-	blregexp "github.com/betterleaks/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/internal/confidence"
+	"github.com/git-pkgs/secrets/betterleaks/internal/words"
+	blregexp "github.com/git-pkgs/secrets/betterleaks/regexp"
 	tiktoken "github.com/pkoukk/tiktoken-go"
 	ahocorasick "github.com/rrethy/ahocorasick"
 )

@@ -13,8 +13,8 @@ import (
 	"github.com/gitleaks/go-gitdiff/gitdiff"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/betterleaks/betterleaks/logging"
-	"github.com/betterleaks/betterleaks/sources/scm"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/sources/scm"
 )
 
 // ParallelGit scans a git repo by running multiple `git log -p` processes

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 const redactPercent = 90

@@ -15,7 +15,7 @@ import (
 	"github.com/mholt/archives"
 	"github.com/rs/zerolog"
 
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 const defaultBufferSize = 100 * 1_000 // 100kb

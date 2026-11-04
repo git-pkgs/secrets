@@ -8,7 +8,7 @@ import (
 	ahocorasick "github.com/rrethy/ahocorasick"
 	"golang.org/x/exp/maps"
 
-	"github.com/betterleaks/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
 )
 
 type AllowlistMatchCondition int

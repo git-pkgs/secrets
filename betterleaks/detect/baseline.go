@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 func IsNew(finding report.Finding, redact uint, baseline []report.Finding) bool {

@@ -86,6 +86,43 @@ Interrupting the command cancels blob processing and active validation work.
 Validation status, reason, and metadata are included in TSV, JSON, and SARIF
 output, with redaction applied unless `--redact=false` is set.
 
+## Go package
+
+Import `github.com/git-pkgs/secrets/scanner` to scan blob bytes directly:
+
+```go
+s, err := scanner.New(ctx, scanner.Options{})
+if err != nil {
+	return err
+}
+defer s.Close()
+
+result, err := s.Scan(ctx, blobBytes, "config.yml")
+if err != nil {
+	return err
+}
+for _, finding := range result.Findings {
+	fmt.Println(finding.RuleID, finding.StartLine)
+}
+```
+
+Construct one scanner and share it across concurrent calls. Pass an empty path
+when no repository path is available. A supplied path enables path-only rules
+and exclusions; binary blobs can produce path-only findings. UTF-16 decoding
+and the embedded or compiled prefilter are shared with the CLI.
+
+Findings contain unredacted secrets. `Result.Scanned` reports whether text
+passed the prefilter. The package applies no blob size limit, traverses no
+history, and maintains no OID cache. Callers handle those steps and attribute
+findings to commits and paths. Cache keys must account for paths when using
+path-based rules or exclusions.
+
+Validation is disabled by default. Set `Options.Validation.Enabled` to enable
+provider requests, with limits and timeouts in `Options.Validation`.
+Validation results and request limits are shared across calls to the same
+scanner. Canceling a call's context cancels that scan; canceling the context
+passed to `New`, or calling `Close`, cancels all active scans.
+
 ## Scan coverage
 
 Blobs larger than the 1 MiB default `--max-blob-size` are skipped, as is
@@ -108,8 +145,8 @@ corpus and regenerate the embedded pattern databases with:
 
 ```sh
 go run ./cmd/synccorpus -version <version>
-go generate .
-go generate -tags gohs .
+go generate ./scanner
+go generate -tags gohs ./scanner
 ```
 
 The default build checks the embedded database against the loaded rule

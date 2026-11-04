@@ -1,7 +1,7 @@
 package sources
 
 import (
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 	"github.com/rs/zerolog"
 )
 

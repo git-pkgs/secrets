@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/betterleaks/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 	"github.com/git-pkgs/secrets/internal/scandb"
 )
 

@@ -6,8 +6,8 @@ import (
 	"io"
 	"sort"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/git-pkgs/scan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 const databaseFormat = "scandb-v1"
