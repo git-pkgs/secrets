@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/betterleaks/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

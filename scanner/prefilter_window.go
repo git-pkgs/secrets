@@ -1,10 +1,10 @@
-package main
+package scanner
 
 import (
 	"bytes"
 	"sort"
 
-	"github.com/betterleaks/betterleaks/detect"
+	"github.com/git-pkgs/secrets/betterleaks/detect"
 )
 
 const (

@@ -2,13 +2,14 @@ package validate
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
 	"sync"
 
-	"github.com/betterleaks/betterleaks/internal/exprruntime"
-	"github.com/betterleaks/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/internal/exprruntime"
+	"github.com/git-pkgs/secrets/betterleaks/report"
 )
 
 // validationJob is the internal unit of work for the pool.
@@ -16,6 +17,8 @@ type validationJob struct {
 	finding  report.Finding
 	program  exprruntime.Program
 	captures map[string]string
+	ctx      context.Context
+	result   chan report.Finding
 }
 
 // Pool manages a set of workers that validate findings asynchronously.
@@ -86,6 +89,23 @@ func (p *Pool) SubmitContext(ctx context.Context, finding report.Finding, progra
 	}
 }
 
+// ValidateContext returns one validation result without closing the shared pool.
+func (p *Pool) ValidateContext(ctx context.Context, finding report.Finding, program exprruntime.Program) (report.Finding, error) {
+	result := make(chan report.Finding, 1)
+	job := validationJob{finding: finding, program: program, captures: finding.CaptureGroups, ctx: ctx, result: result}
+	select {
+	case <-ctx.Done():
+		return report.Finding{}, ctx.Err()
+	case p.jobs <- job:
+	}
+	select {
+	case <-ctx.Done():
+		return report.Finding{}, ctx.Err()
+	case finding := <-result:
+		return finding, nil
+	}
+}
+
 // Close signals that no more jobs will be submitted and waits for all workers
 // to finish.
 func (p *Pool) Close() {
@@ -101,11 +121,19 @@ func (p *Pool) Stats() (hits, misses uint64) {
 func (p *Pool) worker() {
 	defer p.wg.Done()
 	for job := range p.jobs {
+		ctx := job.ctx
+		if ctx == nil {
+			ctx = p.ctx
+		}
+		emit := p.Emit
+		if job.result != nil {
+			emit = func(f report.Finding) { job.result <- f }
+		}
 		f := job.finding
 
 		if len(f.ComponentSets) == 0 {
 			// Simple path: no matched components, validate the secret with its own captures.
-			result, err := p.evalWithCaptures(job.program, job.finding.RuleID, job.finding.Secret, f.ToExprMap(), job.captures, f.Attributes)
+			result, err := p.evalWithCaptures(ctx, job.program, job.finding.RuleID, job.finding.Secret, f.ToExprMap(), job.captures, f.Attributes)
 			if err != nil {
 				f.ValidationStatus = report.ValidationStatusError
 				f.ValidationReason = err.Error()
@@ -114,8 +142,8 @@ func (p *Pool) worker() {
 				f.ValidationReason = result.Reason
 				f.ValidationMeta = result.Metadata
 			}
-			if p.Emit != nil {
-				p.Emit(f)
+			if emit != nil {
+				emit(f)
 			}
 			continue
 		}
@@ -157,7 +185,7 @@ func (p *Pool) worker() {
 				result = r
 			} else {
 				var err error
-				result, err = p.evalWithCacheKey(cacheKey, job.program, f.ToExprMap(), job.captures, components, f.Attributes)
+				result, err = p.evalWithCacheKey(ctx, cacheKey, job.program, f.ToExprMap(), job.captures, components, f.Attributes)
 				if err != nil {
 					result = &Result{Status: report.ValidationStatusError, Reason: err.Error(), Metadata: map[string]any{}}
 				}
@@ -199,8 +227,8 @@ func (p *Pool) worker() {
 			f.ComponentSets = validOnly
 		}
 
-		if p.Emit != nil {
-			p.Emit(f)
+		if emit != nil {
+			emit(f)
 		}
 	}
 }
@@ -208,23 +236,32 @@ func (p *Pool) worker() {
 // evalWithCaptures runs the validation program for the given secret and captures,
 // using the cache to avoid duplicate HTTP requests. The secret is used only
 // for cache keying; the program reads it from finding["secret"].
-func (p *Pool) evalWithCaptures(program exprruntime.Program, ruleID, secret string, finding, captures, attributes map[string]string) (*Result, error) {
+func (p *Pool) evalWithCaptures(ctx context.Context, program exprruntime.Program, ruleID, secret string, finding, captures, attributes map[string]string) (*Result, error) {
 	cacheKey := CacheKey(ruleID, secret, captures, nil)
-	return p.evalWithCacheKey(cacheKey, program, finding, captures, nil, attributes)
+	return p.evalWithCacheKey(ctx, cacheKey, program, finding, captures, nil, attributes)
 }
 
 // evalWithCacheKey runs the validation program using the given pre-computed cache key.
-func (p *Pool) evalWithCacheKey(cacheKey string, program exprruntime.Program, finding, captures map[string]string, components map[string]any, attributes map[string]string) (*Result, error) {
+func (p *Pool) evalWithCacheKey(ctx context.Context, cacheKey string, program exprruntime.Program, finding, captures map[string]string, components map[string]any, attributes map[string]string) (*Result, error) {
 	if p.Debug {
-		return p.evalProgram(program, finding, captures, components, attributes)
+		return p.evalProgram(ctx, program, finding, captures, components, attributes)
 	}
-	return p.cache.GetOrDo(cacheKey, func() (*Result, error) {
-		return p.evalProgram(program, finding, captures, components, attributes)
-	})
+	for {
+		result, err := p.cache.GetOrDo(cacheKey, func() (*Result, error) {
+			return p.evalProgram(ctx, program, finding, captures, components, attributes)
+		})
+		if ctx.Err() == nil && (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) {
+			continue
+		}
+		return result, err
+	}
 }
 
-func (p *Pool) evalProgram(program exprruntime.Program, finding, captures map[string]string, components map[string]any, attributes map[string]string) (*Result, error) {
-	result, evalErr := p.runtime.EvalValidationWithComponents(p.ctx, program, finding, captures, components, attributes, exprruntime.EvalOptions{Debug: p.Debug})
+func (p *Pool) evalProgram(ctx context.Context, program exprruntime.Program, finding, captures map[string]string, components map[string]any, attributes map[string]string) (*Result, error) {
+	result, evalErr := p.runtime.EvalValidationWithComponents(ctx, program, finding, captures, components, attributes, exprruntime.EvalOptions{Debug: p.Debug})
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if result.RequestLimitHit != nil {
 		hit := result.RequestLimitHit
 		metadata := map[string]any{

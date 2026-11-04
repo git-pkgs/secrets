@@ -3,8 +3,8 @@ package exprruntime_test
 import (
 	"testing"
 
-	"github.com/betterleaks/betterleaks/detect"
-	"github.com/betterleaks/betterleaks/internal/exprruntime"
+	"github.com/git-pkgs/secrets/betterleaks/detect"
+	"github.com/git-pkgs/secrets/betterleaks/internal/exprruntime"
 	"github.com/stretchr/testify/require"
 )
 

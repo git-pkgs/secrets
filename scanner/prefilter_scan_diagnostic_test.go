@@ -1,6 +1,6 @@
 //go:build !gohs
 
-package main
+package scanner
 
 import (
 	"bytes"
@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/git-pkgs/history"
 	"github.com/git-pkgs/scan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 func TestScanBlobTimings(t *testing.T) {
@@ -25,7 +25,7 @@ func TestScanBlobTimings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pf, err := newPrefilter(cfg)
+	pf, err := newPrefilter(cfg, true)
 	if err != nil {
 		t.Fatal(err)
 	}

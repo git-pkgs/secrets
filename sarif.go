@@ -4,8 +4,8 @@ import (
 	"io"
 	"sort"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/git-pkgs/sarif"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 const (

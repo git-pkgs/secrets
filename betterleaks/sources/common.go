@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 	"github.com/mholt/archives"
 )
 

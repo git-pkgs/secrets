@@ -3,7 +3,7 @@ package regexp
 import (
 	"regexp"
 
-	"github.com/betterleaks/betterleaks/regexp/internal"
+	"github.com/git-pkgs/secrets/betterleaks/regexp/internal"
 )
 
 // Stdlib is an Engine that uses the standard regexp package.

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/betterleaks/betterleaks/internal/confidence"
-	"github.com/betterleaks/betterleaks/internal/contextwindow"
-	"github.com/betterleaks/betterleaks/internal/exprruntime"
-	"github.com/betterleaks/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/internal/confidence"
+	"github.com/git-pkgs/secrets/betterleaks/internal/contextwindow"
+	"github.com/git-pkgs/secrets/betterleaks/internal/exprruntime"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
 )
 
 // Rules contain information that define details on how to detect secrets

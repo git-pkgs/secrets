@@ -707,30 +707,3 @@ func TestRules(t *testing.T) {
 		t.Fatalf("expected >100 rules, got %d lines:\n%s", lines, out)
 	}
 }
-
-func TestPrepareBlob(t *testing.T) {
-	plain := []byte("plain text")
-	prepared, binaryContent := prepareBlob(plain)
-	if binaryContent || string(prepared) != string(plain) {
-		t.Fatalf("plain text prepared as %q, binary = %v", prepared, binaryContent)
-	}
-
-	content := "token: " + fakeGitHubPAT + "\n"
-	for _, order := range []binary.ByteOrder{binary.LittleEndian, binary.BigEndian} {
-		prepared, binaryContent = prepareBlob([]byte(encodedUTF16(content, order)))
-		if binaryContent || string(prepared) != content {
-			t.Fatalf("UTF-16 prepared as %q, binary = %v", prepared, binaryContent)
-		}
-	}
-
-	unknown := []byte{0xff, 't', 'e', 'x', 't'}
-	prepared, binaryContent = prepareBlob(unknown)
-	if binaryContent || string(prepared) != string(unknown) {
-		t.Fatalf("unknown encoding prepared as %q, binary = %v", prepared, binaryContent)
-	}
-
-	prepared, binaryContent = prepareBlob([]byte("has\x00null"))
-	if !binaryContent || prepared != nil {
-		t.Fatalf("binary prepared as %q, binary = %v", prepared, binaryContent)
-	}
-}

@@ -3,7 +3,7 @@ package config
 import (
 	"strings"
 
-	"github.com/betterleaks/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/betterleaks/regexp"
 )
 
 func anyRegexMatch(f string, res []*regexp.Regexp) bool {

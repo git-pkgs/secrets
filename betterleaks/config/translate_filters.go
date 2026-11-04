@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 // TranslateLegacyFilters converts deprecated Allowlists, Entropy, and TokenEfficiency

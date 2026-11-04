@@ -8,8 +8,8 @@ import (
 	"io"
 	"sort"
 
-	"github.com/betterleaks/betterleaks/config"
 	"github.com/flier/gohs/hyperscan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 type Stats struct {
@@ -22,7 +22,7 @@ var locatorRuleIDs = []string{"generic-api-key"}
 
 const databaseFormat = "hyperscandb-v2"
 
-func Compile(cfg *config.Config) (hyperscan.BlockDatabase, Stats, error) {
+func Compile(cfg *config.Config, includeLocators bool) (hyperscan.BlockDatabase, Stats, error) {
 	ids := RuleIDs(cfg)
 
 	patterns := make([]*hyperscan.Pattern, 0, len(ids))
@@ -45,11 +45,8 @@ func Compile(cfg *config.Config) (hyperscan.BlockDatabase, Stats, error) {
 		}
 		patterns = append(patterns, pattern)
 	}
-	for _, id := range locatorRuleIDs {
-		rule, ok := cfg.Rules[id]
-		if !ok || rule.Regex == nil {
-			return nil, Stats{}, fmt.Errorf("locator rule %s is missing", id)
-		}
+	for _, id := range LocatorRuleIDs(cfg, includeLocators) {
+		rule := cfg.Rules[id]
 		pattern := hyperscan.NewPattern(rule.Regex.String(), hyperscan.AllowEmpty)
 		pattern.Id = len(patterns)
 		testDB, err := hyperscan.NewBlockDatabase(pattern)
@@ -66,7 +63,7 @@ func Compile(cfg *config.Config) (hyperscan.BlockDatabase, Stats, error) {
 		stats.Locators++
 	}
 	if len(patterns) == 0 {
-		return nil, Stats{}, fmt.Errorf("no rule regexes to compile")
+		return nil, stats, nil
 	}
 	db, err := hyperscan.NewBlockDatabase(patterns...)
 	if err != nil {
@@ -86,17 +83,26 @@ func RuleIDs(cfg *config.Config) []string {
 	return ids
 }
 
-func LocatorRuleIDs() []string {
-	return append([]string(nil), locatorRuleIDs...)
+func LocatorRuleIDs(cfg *config.Config, includeLocators bool) []string {
+	if !includeLocators {
+		return nil
+	}
+	var ids []string
+	for _, id := range locatorRuleIDs {
+		if rule, ok := cfg.Rules[id]; ok && rule.Regex != nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids
 }
 
-func Hash(cfg *config.Config) string {
+func Hash(cfg *config.Config, includeLocators bool) string {
 	h := sha256.New()
 	_, _ = io.WriteString(h, databaseFormat+"\n")
 	for _, id := range RuleIDs(cfg) {
 		_, _ = io.WriteString(h, id+"\x00"+cfg.Rules[id].Regex.String()+"\n")
 	}
-	for _, id := range locatorRuleIDs {
+	for _, id := range LocatorRuleIDs(cfg, includeLocators) {
 		_, _ = io.WriteString(h, "locator\x00"+id+"\n")
 	}
 	return fmt.Sprintf("%x", h.Sum(nil))

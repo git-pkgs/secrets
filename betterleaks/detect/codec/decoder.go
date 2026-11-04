@@ -3,7 +3,7 @@ package codec
 import (
 	"bytes"
 
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 // Decoder decodes various types of data in place

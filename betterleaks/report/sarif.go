@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/betterleaks/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/config"
 )
 
 type SarifReporter struct {

@@ -1,6 +1,6 @@
 //go:build !gohs
 
-package main
+package scanner
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/betterleaks/betterleaks/config"
-	"github.com/betterleaks/betterleaks/detect"
-	"github.com/betterleaks/betterleaks/report"
-	"github.com/betterleaks/betterleaks/sources"
 	"github.com/git-pkgs/scan"
+	"github.com/git-pkgs/secrets/betterleaks/config"
+	"github.com/git-pkgs/secrets/betterleaks/detect"
+	"github.com/git-pkgs/secrets/betterleaks/report"
+	"github.com/git-pkgs/secrets/betterleaks/sources"
 	"github.com/git-pkgs/secrets/internal/scandb"
 )
 
-//go:generate go run ./cmd/genscandb -output scan.db
+//go:generate go run ../cmd/genscandb -output scan.db
 
 //go:embed scan.db
 var embeddedScanDB []byte
@@ -33,37 +33,25 @@ type prefilter struct {
 	pathOnlyRules []config.Rule
 }
 
-func newPrefilter(cfg *config.Config) (prefilter, error) {
+func newPrefilter(cfg *config.Config, includeLocators bool) (prefilter, error) {
 	var db *scan.Database
 	var err error
 	engineName := "scan-compiled"
-	if strings.TrimSpace(embeddedScanHash) == scandb.Hash(cfg) {
+	if includeLocators && strings.TrimSpace(embeddedScanHash) == scandb.Hash(cfg, true) {
 		db, err = scan.UnmarshalDatabase(embeddedScanDB)
 		if err != nil {
 			return prefilter{}, err
 		}
 		engineName = "scan-embedded"
 	} else {
-		db, err = scandb.Compile(cfg)
+		db, err = scandb.Compile(cfg, includeLocators)
 		if err != nil {
 			return prefilter{}, err
 		}
 	}
 	pool := &sync.Pool{New: func() any { return scan.NewScratch(db) }}
-	return prefilter{db: db, pool: pool, engineName: engineName, ruleIDs: scandb.RuleIDs(cfg), locatorIDs: scandb.LocatorRuleIDs(cfg), pathOnlyRules: configuredPathOnlyRules(cfg)}, nil
+	return prefilter{db: db, pool: pool, engineName: engineName, ruleIDs: scandb.RuleIDs(cfg), locatorIDs: scandb.LocatorRuleIDs(cfg, includeLocators), pathOnlyRules: configuredPathOnlyRules(cfg)}, nil
 }
-
-func (p prefilter) match(data []byte) bool {
-	if p.db == nil {
-		return true
-	}
-	scratch := p.pool.Get().(*scan.Scratch)
-	defer p.pool.Put(scratch)
-	matched, err := p.db.Match(data, scratch)
-	return matched || err != nil
-}
-
-func (p prefilter) pathMatch(path string) bool { return matchesPathOnlyRule(p.pathOnlyRules, path) }
 
 func (p prefilter) detect(ctx context.Context, d *detect.Detector, data []byte, attributes map[string]string) ([]report.Finding, bool) {
 	fragment := sources.Fragment{Raw: string(data), Attributes: attributes}
@@ -112,3 +100,5 @@ func (p prefilter) detect(ctx context.Context, d *detect.Detector, data []byte, 
 }
 
 func (p prefilter) engine() string { return p.engineName }
+
+func (*prefilter) close() error { return nil }

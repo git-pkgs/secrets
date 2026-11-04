@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/betterleaks/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/logging"
 )
 
 func httpNamespace(rt *runtimeBindings) map[string]any {
