@@ -25,7 +25,7 @@ func generate(output string) error {
 	if err != nil {
 		return err
 	}
-	db, err := scandb.Compile(cfg)
+	db, err := scandb.Compile(cfg, true)
 	if err != nil {
 		return err
 	}
@@ -36,9 +36,9 @@ func generate(output string) error {
 	if err := os.WriteFile(output, data, databaseFileMode); err != nil {
 		return err
 	}
-	if err := os.WriteFile(output+".sha256", []byte(scandb.Hash(cfg)+"\n"), databaseFileMode); err != nil {
+	if err := os.WriteFile(output+".sha256", []byte(scandb.Hash(cfg, true)+"\n"), databaseFileMode); err != nil {
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "genscandb: %d rules, %d locators, %d bytes\n", len(scandb.RuleIDs(cfg)), len(scandb.LocatorRuleIDs(cfg)), len(data))
+	fmt.Fprintf(os.Stderr, "genscandb: %d rules, %d locators, %d bytes\n", len(scandb.RuleIDs(cfg)), len(scandb.LocatorRuleIDs(cfg, true)), len(data))
 	return nil
 }

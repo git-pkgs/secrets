@@ -148,6 +148,35 @@ keywords = ["CUSTOM_"]
 	}
 }
 
+func TestNewRejectsInvalidPrefilter(t *testing.T) {
+	cfg := &config.Config{Prefilter: "invalid("}
+	_, err := scanner.New(context.Background(), scanner.Options{Config: cfg})
+	if err == nil || !strings.Contains(err.Error(), "compiling global prefilter") {
+		t.Fatalf("err=%v", err)
+	}
+}
+
+func TestScanCustomGenericAPIKeyAcrossLocatorWindow(t *testing.T) {
+	cfg, err := config.ParseTOMLString(`[[rules]]
+id = "generic-api-key"
+description = "Multiline fixture"
+regex = '(?s)BEGIN.*END'
+keywords = ["BEGIN"]
+`, "fixture.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := newScanner(t, scanner.Options{Config: cfg})
+	data := []byte("BEGIN\n" + strings.Repeat("line\n", 600) + "END\n")
+	result, err := s.Scan(context.Background(), data, "fixture.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Scanned || len(result.Findings) != 1 || result.Findings[0].RuleID != "generic-api-key" {
+		t.Fatalf("result=%+v", result)
+	}
+}
+
 func TestScanValidationOptInAndCache(t *testing.T) {
 	var requests atomic.Int64
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

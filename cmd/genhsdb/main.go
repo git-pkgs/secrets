@@ -20,7 +20,7 @@ func main() {
 	if err != nil {
 		fail(err)
 	}
-	db, stats, err := hyperscandb.Compile(cfg)
+	db, stats, err := hyperscandb.Compile(cfg, true)
 	if err != nil {
 		fail(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	if *hashOutput == "" {
 		*hashOutput = *output + ".sha256"
 	}
-	if err := os.WriteFile(*hashOutput, []byte(hyperscandb.Hash(cfg)+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(*hashOutput, []byte(hyperscandb.Hash(cfg, true)+"\n"), 0o644); err != nil {
 		fail(err)
 	}
 	fmt.Fprintf(os.Stderr, "genhsdb: %d exact patterns, %d prefilter patterns, %d locators\n", stats.Exact, stats.Prefilter, stats.Locators)

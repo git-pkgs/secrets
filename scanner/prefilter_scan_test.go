@@ -22,10 +22,10 @@ func TestEmbeddedScanDatabaseMatchesRules(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.TrimSpace(embeddedScanHash) != scandb.Hash(cfg) {
+	if strings.TrimSpace(embeddedScanHash) != scandb.Hash(cfg, true) {
 		t.Fatal("embedded database is stale; run go generate ./scanner")
 	}
-	pf, err := newPrefilter(cfg)
+	pf, err := newPrefilter(cfg, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ keywords = ["CUSTOM_"]
 	if err != nil {
 		t.Fatal(err)
 	}
-	pf, err := newPrefilter(cfg)
+	pf, err := newPrefilter(cfg, false)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -33,7 +33,7 @@ type Result struct {
 }
 
 // Scanner shares its compiled rules and prefilter across concurrent Scan calls.
-// Close it after use to release validation workers.
+// Close it after use to release its resources.
 type Scanner struct {
 	detector  *detect.Detector
 	prefilter prefilter
@@ -58,6 +58,7 @@ func New(ctx context.Context, opts Options) (*Scanner, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	includeLocators := opts.Config == nil
 	cfg := opts.Config
 	if cfg == nil {
 		var err error
@@ -66,7 +67,10 @@ func New(ctx context.Context, opts Options) (*Scanner, error) {
 			return nil, err
 		}
 	}
-	pf, err := newPrefilter(cfg)
+	if err := cfg.CompileFilters(nil); err != nil {
+		return nil, err
+	}
+	pf, err := newPrefilter(cfg, includeLocators)
 	if err != nil {
 		return nil, err
 	}
@@ -124,16 +128,17 @@ func (s *Scanner) Scan(ctx context.Context, data []byte, path string) (Result, e
 // Engine identifies the embedded or compiled prefilter in use.
 func (s *Scanner) Engine() string { return s.prefilter.engine() }
 
-// Close cancels active scans and releases validation workers. It is idempotent.
+// Close cancels active scans and releases scanner resources. It is idempotent.
 func (s *Scanner) Close() error {
 	s.cancel()
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if !s.closed {
-		s.closed = true
-		if s.detector.ValidationPool != nil {
-			s.detector.ValidationPool.Close()
-		}
+	if s.closed {
+		return nil
 	}
-	return nil
+	s.closed = true
+	if s.detector.ValidationPool != nil {
+		s.detector.ValidationPool.Close()
+	}
+	return s.prefilter.close()
 }

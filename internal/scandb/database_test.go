@@ -20,7 +20,7 @@ regex = 'key[0-9]{4}'
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := Compile(cfg)
+	db, err := Compile(cfg, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,9 +33,9 @@ regex = 'key[0-9]{4}'
 	if len(matched) != 2 || matched[0] != "a-rule" || matched[1] != "z-rule" {
 		t.Fatalf("matched=%v", matched)
 	}
-	before := Hash(cfg)
+	before := Hash(cfg, true)
 	delete(cfg.Rules, "z-rule")
-	if Hash(cfg) == before {
+	if Hash(cfg, true) == before {
 		t.Fatal("rule hash did not change")
 	}
 }

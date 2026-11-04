@@ -55,7 +55,6 @@ func scanCmd(ctx context.Context, repo string) error {
 		timings = detect.NewRuleTimingCollector()
 	}
 	scanner, err := scanner.New(ctx, scanner.Options{
-		Config: cfg,
 		Validation: detect.ValidationOptions{
 			Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,
 			MaxRequestsPerTarget: validationMaxRequestsPerTarget,

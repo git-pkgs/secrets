@@ -25,7 +25,7 @@ func TestScanBlobTimings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pf, err := newPrefilter(cfg)
+	pf, err := newPrefilter(cfg, true)
 	if err != nil {
 		t.Fatal(err)
 	}
