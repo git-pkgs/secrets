@@ -3,7 +3,6 @@ module github.com/git-pkgs/secrets
 go 1.26.0
 
 require (
-	github.com/betterleaks/go-re2 v1.11.0-betterleaks.3
 	github.com/expr-lang/expr v1.17.8
 	github.com/fatih/semgroup v1.2.0
 	github.com/flier/gohs v1.2.3
@@ -50,8 +49,6 @@ require (
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/tetratelabs/wazero v1.12.0 // indirect
-	github.com/wasilibs/wazero-helpers v0.0.0-20250123031827-cd30c44769bb // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
