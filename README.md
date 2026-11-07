@@ -8,14 +8,14 @@ occurrence, and attributes findings to commits and paths.
 
 Requires Go 1.26 or later. The default build embeds a compiled pattern
 database for the [git-pkgs/scan](https://github.com/git-pkgs/scan) prefilter
-and uses RE2 through WebAssembly for rule matching. It has no native
+and uses Go's standard regexp package for rule matching. It has no native
 library dependencies:
 
 ```sh
 CGO_ENABLED=0 go build -o secrets .
 ```
 
-The `gohs` build uses a Hyperscan prefilter with the same RE2 rule matching.
+The `gohs` build uses a Hyperscan prefilter with the same regexp package.
 It requires CGo, `pkg-config`, and a Hyperscan-compatible library that
 exports `libhs`, such as Hyperscan or VectorScan:
 
