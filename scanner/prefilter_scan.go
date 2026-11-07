@@ -3,8 +3,13 @@
 package scanner
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	_ "embed"
+	"encoding/binary"
+	"fmt"
+	"io"
 	"strings"
 	"sync"
 
@@ -16,12 +21,12 @@ import (
 	"github.com/git-pkgs/secrets/internal/scandb"
 )
 
-//go:generate go run ../cmd/genscandb -output scan.db
+//go:generate go run ../cmd/genscandb -output scan.db.gz
 
-//go:embed scan.db
+//go:embed scan.db.gz
 var embeddedScanDB []byte
 
-//go:embed scan.db.sha256
+//go:embed scan.db.gz.sha256
 var embeddedScanHash string
 
 type prefilter struct {
@@ -33,12 +38,17 @@ type prefilter struct {
 	pathOnlyRules []config.Rule
 }
 
+const (
+	gzipFooterSize        = 4
+	maxEmbeddedScanDBSize = 64 << 20
+)
+
 func newPrefilter(cfg *config.Config, includeLocators bool) (prefilter, error) {
 	var db *scan.Database
 	var err error
 	engineName := "scan-compiled"
 	if includeLocators && strings.TrimSpace(embeddedScanHash) == scandb.Hash(cfg, true) {
-		db, err = scan.UnmarshalDatabase(embeddedScanDB)
+		db, err = unmarshalCompressedDatabase(embeddedScanDB)
 		if err != nil {
 			return prefilter{}, err
 		}
@@ -51,6 +61,34 @@ func newPrefilter(cfg *config.Config, includeLocators bool) (prefilter, error) {
 	}
 	pool := &sync.Pool{New: func() any { return scan.NewScratch(db) }}
 	return prefilter{db: db, pool: pool, engineName: engineName, ruleIDs: scandb.RuleIDs(cfg), locatorIDs: scandb.LocatorRuleIDs(cfg, includeLocators), pathOnlyRules: configuredPathOnlyRules(cfg)}, nil
+}
+
+func unmarshalCompressedDatabase(data []byte) (*scan.Database, error) {
+	if len(data) < gzipFooterSize {
+		return nil, io.ErrUnexpectedEOF
+	}
+	size := int(binary.LittleEndian.Uint32(data[len(data)-gzipFooterSize:]))
+	if size == 0 || size > maxEmbeddedScanDBSize {
+		return nil, fmt.Errorf("embedded scan database size %d is invalid", size)
+	}
+	reader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+	var decompressed bytes.Buffer
+	decompressed.Grow(size)
+	_, copyErr := io.Copy(&decompressed, reader)
+	closeErr := reader.Close()
+	if copyErr != nil {
+		return nil, copyErr
+	}
+	if closeErr != nil {
+		return nil, closeErr
+	}
+	if decompressed.Len() != size {
+		return nil, fmt.Errorf("embedded scan database size is %d, expected %d", decompressed.Len(), size)
+	}
+	return scan.UnmarshalDatabase(decompressed.Bytes())
 }
 
 func (p prefilter) detect(ctx context.Context, d *detect.Detector, data []byte, attributes map[string]string) ([]report.Finding, bool) {
