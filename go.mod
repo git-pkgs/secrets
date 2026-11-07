@@ -4,7 +4,6 @@ go 1.26.0
 
 require (
 	github.com/expr-lang/expr v1.17.8
-	github.com/fatih/semgroup v1.2.0
 	github.com/flier/gohs v1.2.3
 	github.com/git-pkgs/history v0.1.1
 	github.com/git-pkgs/magic v0.6.0
@@ -12,7 +11,6 @@ require (
 	github.com/git-pkgs/scan v0.1.1
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-version v1.7.0
-	github.com/mattn/go-isatty v0.0.20
 	github.com/pelletier/go-toml/v2 v2.3.1
 	github.com/pkoukk/tiktoken-go v0.1.8
 	github.com/rrethy/ahocorasick v1.0.0
@@ -39,6 +37,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pjbgf/sha1cd v0.6.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3 // indirect
