@@ -53,6 +53,8 @@ const (
 	// Filesystem
 	AttrFSSymlink = source.AttrFSSymlink
 
+	InnerPathSeparator = source.InnerPathSeparator
+
 	// GitHub
 	AttrGitHubOwner       = "github.owner"
 	AttrGitHubOwnerType   = "github.owner_type"
