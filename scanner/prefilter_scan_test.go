@@ -3,18 +3,52 @@
 package scanner
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/git-pkgs/scan"
 	"github.com/git-pkgs/secrets/betterleaks/config"
 	"github.com/git-pkgs/secrets/betterleaks/detect"
 	"github.com/git-pkgs/secrets/betterleaks/report"
 	"github.com/git-pkgs/secrets/betterleaks/sources"
 	"github.com/git-pkgs/secrets/internal/scandb"
 )
+
+func BenchmarkEmbeddedScanDatabaseLoad(b *testing.B) {
+	reader, err := gzip.NewReader(bytes.NewReader(embeddedScanDB))
+	if err != nil {
+		b.Fatal(err)
+	}
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		b.Fatal(err)
+	}
+	if err := reader.Close(); err != nil {
+		b.Fatal(err)
+	}
+	b.Run("compressed", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			if _, err := unmarshalCompressedDatabase(embeddedScanDB); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+	b.Run("uncompressed", func(b *testing.B) {
+		b.ReportAllocs()
+		for b.Loop() {
+			if _, err := scan.UnmarshalDatabase(data); err != nil {
+				b.Fatal(err)
+			}
+		}
+	})
+}
 
 func TestEmbeddedScanDatabaseMatchesRules(t *testing.T) {
 	cfg, err := config.Default()

@@ -34,6 +34,18 @@ func newScanner(t *testing.T, opts scanner.Options) *scanner.Scanner {
 	return s
 }
 
+func BenchmarkNew(b *testing.B) {
+	for b.Loop() {
+		s, err := scanner.New(context.Background(), scanner.Options{})
+		if err != nil {
+			b.Fatal(err)
+		}
+		if err := s.Close(); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
 func TestScan(t *testing.T) {
 	s := newScanner(t, scanner.Options{})
 	for _, test := range []struct {
