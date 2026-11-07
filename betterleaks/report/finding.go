@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 )
 
 // Finding contains a whole bunch of information about a secret finding.

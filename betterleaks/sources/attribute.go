@@ -1,11 +1,13 @@
 package sources
 
+import "github.com/git-pkgs/secrets/betterleaks/source"
+
 // TODO move to a separate package (attrkeys/) once stable.
 
 const (
 	// Universal
-	AttrPath = "path"
-	AttrURL  = "url"
+	AttrPath = source.AttrPath
+	AttrURL  = source.AttrURL
 
 	// Resource Key
 	AttrResource = "resource"
@@ -40,16 +42,16 @@ const (
 	ResourceHuggingFaceBucket     = "huggingface.bucket"
 
 	// Git
-	AttrGitSHA         = "git.sha"
-	AttrGitAuthorName  = "git.author_name"
-	AttrGitAuthorEmail = "git.author_email"
-	AttrGitDate        = "git.date"
-	AttrGitMessage     = "git.message"
-	AttrGitRemoteURL   = "git.remote_url"
-	AttrGitPlatform    = "git.platform"
+	AttrGitSHA         = source.AttrGitSHA
+	AttrGitAuthorName  = source.AttrGitAuthorName
+	AttrGitAuthorEmail = source.AttrGitAuthorEmail
+	AttrGitDate        = source.AttrGitDate
+	AttrGitMessage     = source.AttrGitMessage
+	AttrGitRemoteURL   = source.AttrGitRemoteURL
+	AttrGitPlatform    = source.AttrGitPlatform
 
 	// Filesystem
-	AttrFSSymlink = "fs.symlink"
+	AttrFSSymlink = source.AttrFSSymlink
 
 	// GitHub
 	AttrGitHubOwner       = "github.owner"

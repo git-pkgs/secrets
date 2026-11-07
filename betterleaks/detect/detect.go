@@ -27,7 +27,7 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/logging"
 	blregexp "github.com/git-pkgs/secrets/betterleaks/regexp"
 	"github.com/git-pkgs/secrets/betterleaks/report"
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 
 	"github.com/fatih/semgroup"
 	"github.com/rs/zerolog"

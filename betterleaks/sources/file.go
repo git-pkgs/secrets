@@ -16,10 +16,11 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/git-pkgs/secrets/betterleaks/logging"
+	"github.com/git-pkgs/secrets/betterleaks/source"
 )
 
 const defaultBufferSize = 100 * 1_000 // 100kb
-const InnerPathSeparator = "!"
+const InnerPathSeparator = source.InnerPathSeparator
 
 var bufferPool = sync.Pool{
 	New: func() any {
