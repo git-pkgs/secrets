@@ -17,7 +17,6 @@ import (
 )
 
 func TestEmbeddedScanDatabaseMatchesRules(t *testing.T) {
-	configureRegexpEngine()
 	cfg, err := config.Default()
 	if err != nil {
 		t.Fatal(err)

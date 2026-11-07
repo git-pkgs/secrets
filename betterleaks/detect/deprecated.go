@@ -10,7 +10,7 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/internal/confidence"
 	"github.com/git-pkgs/secrets/betterleaks/logging"
 	"github.com/git-pkgs/secrets/betterleaks/report"
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 	"github.com/rs/zerolog"
 )
 
@@ -94,11 +94,6 @@ func (d *Detector) DetectSource(ctx context.Context, source sources.Source) ([]r
 
 		return nil
 	})
-
-	if _, isGit := source.(*sources.Git); isGit {
-		logging.Info().Msgf("%d commits scanned.", len(d.commitMap))
-		logging.Debug().Msg("Note: this number might be smaller than expected due to commits with no additions")
-	}
 
 	if d.ValidationPool != nil {
 		d.ValidationPool.Close()
