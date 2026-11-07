@@ -16,6 +16,7 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/detect"
 	"github.com/git-pkgs/secrets/betterleaks/report"
 	"github.com/git-pkgs/secrets/scanner"
+	scannerre2 "github.com/git-pkgs/secrets/scanner/re2"
 )
 
 // Finding is one detected secret, optionally attributed to the commit and
@@ -54,6 +55,7 @@ func scanCmd(ctx context.Context, repo string) error {
 	if ruleTimings != "" {
 		timings = detect.NewRuleTimingCollector()
 	}
+	scannerre2.Enable()
 	scanner, err := scanner.New(ctx, scanner.Options{
 		Validation: detect.ValidationOptions{
 			Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,

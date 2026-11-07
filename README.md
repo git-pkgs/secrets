@@ -111,6 +111,10 @@ when no repository path is available. A supplied path enables path-only rules
 and exclusions; binary blobs can produce path-only findings. UTF-16 decoding
 and the embedded or compiled prefilter are shared with the CLI.
 
+The library scanner uses Go's standard regexp engine. Call `re2.Enable()` from
+`github.com/git-pkgs/secrets/scanner/re2` before creating a scanner when RE2 is
+required. The `secrets` CLI enables RE2 itself.
+
 Findings contain unredacted secrets. `Result.Scanned` reports whether text
 passed the prefilter. The package applies no blob size limit, traverses no
 history, and maintains no OID cache. Callers handle those steps and attribute
