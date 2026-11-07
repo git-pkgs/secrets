@@ -12,7 +12,7 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/config"
 	"github.com/git-pkgs/secrets/betterleaks/detect"
 	"github.com/git-pkgs/secrets/betterleaks/report"
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 	"github.com/git-pkgs/secrets/internal/hyperscandb"
 )
 

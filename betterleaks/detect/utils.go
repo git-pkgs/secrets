@@ -9,7 +9,7 @@ import (
 
 	"github.com/git-pkgs/secrets/betterleaks/logging"
 	"github.com/git-pkgs/secrets/betterleaks/report"
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 	"github.com/git-pkgs/secrets/betterleaks/sources/scm"
 )
 

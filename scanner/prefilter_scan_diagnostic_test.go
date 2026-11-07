@@ -20,7 +20,6 @@ func TestScanBlobTimings(t *testing.T) {
 	if repoPath == "" {
 		t.Skip("set SCAN_DIAGNOSTIC_REPO")
 	}
-	configureRegexpEngine()
 	cfg, err := config.Default()
 	if err != nil {
 		t.Fatal(err)

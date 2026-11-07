@@ -10,7 +10,7 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/config"
 	"github.com/git-pkgs/secrets/betterleaks/detect"
 	"github.com/git-pkgs/secrets/betterleaks/report"
-	"github.com/git-pkgs/secrets/betterleaks/sources"
+	sources "github.com/git-pkgs/secrets/betterleaks/source"
 )
 
 // Finding includes the matched rule, secret, source location, and validation details.

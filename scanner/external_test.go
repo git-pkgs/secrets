@@ -1,11 +1,26 @@
 package scanner_test
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	blregexp "github.com/git-pkgs/secrets/betterleaks/regexp"
+	"github.com/git-pkgs/secrets/scanner"
 )
+
+func TestScannerUsesStandardRegexpByDefault(t *testing.T) {
+	s, err := scanner.New(context.Background(), scanner.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+	if got := blregexp.Version(); got != "stdlib" {
+		t.Fatalf("regexp engine=%q", got)
+	}
+}
 
 func TestImportFromAnotherModule(t *testing.T) {
 	root, err := filepath.Abs("..")
