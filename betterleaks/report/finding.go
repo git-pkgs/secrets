@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"math"
-	"sort"
 	"strings"
 
 	sources "github.com/git-pkgs/secrets/betterleaks/source"
@@ -225,57 +224,6 @@ func MaskSecret(secret string, percent uint) string {
 
 func (f *Finding) SetExprContext(context string) {
 	f.exprContext = context
-}
-
-// Print writes a verbose finding using the pretty box format.
-func (f Finding) Print(noColor bool, redact uint) {
-	f.printPretty(noColor, redact)
-}
-
-// locateMatch returns the byte index of match within rawLine, using startCol
-// (1-indexed byte offset) to disambiguate duplicate occurrences. When the
-// exact position doesn't match, it searches forward then backward from the
-// expected position before falling back to the first occurrence.
-func locateMatch(rawLine, rawMatch string, startCol int) int {
-	if rawLine == "" || rawMatch == "" {
-		return -1
-	}
-
-	if startCol > 0 {
-		idx := startCol - 1 // assumes StartColumn is a 1-based byte offset
-
-		if idx >= 0 && idx+len(rawMatch) <= len(rawLine) &&
-			rawLine[idx:idx+len(rawMatch)] == rawMatch {
-			return idx
-		}
-
-		// Search near the expected position first, not from the start.
-		if idx < 0 {
-			idx = 0
-		}
-		if idx > len(rawLine) {
-			idx = len(rawLine)
-		}
-		if rel := strings.Index(rawLine[idx:], rawMatch); rel >= 0 {
-			return idx + rel
-		}
-		if prev := strings.LastIndex(rawLine[:idx], rawMatch); prev >= 0 {
-			return prev
-		}
-	}
-
-	// startCol <= 0 (no hint provided) or, redundantly, when the
-	// forward+backward searches above already covered the full line.
-	return strings.Index(rawLine, rawMatch)
-}
-
-func sortedMapKeys(m map[string]any) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
 }
 
 func (f *Finding) SetAttr(key, value string) {

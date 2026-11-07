@@ -19,8 +19,6 @@ github.com/emirpasic/gods v1.18.1 h1:FXtiHYKDGKCW2KzwZKx0iC0PQmdlorYgdFG9jPXJ1Bc
 github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FMNAnJvWQ=
 github.com/expr-lang/expr v1.17.8 h1:W1loDTT+0PQf5YteHSTpju2qfUfNoBt4yw9+wOEU9VM=
 github.com/expr-lang/expr v1.17.8/go.mod h1:8/vRC7+7HBzESEqt5kKpYXxrxkr31SaO8r40VO/1IT4=
-github.com/fatih/semgroup v1.2.0 h1:h/OLXwEM+3NNyAdZEpMiH1OzfplU09i2qXPVThGZvyg=
-github.com/fatih/semgroup v1.2.0/go.mod h1:1KAD4iIYfXjE4U13B48VM4z9QUwV5Tt8O4rS879kgm8=
 github.com/flier/gohs v1.2.3 h1:GlsPhGTLfhLFQ6ZzNbXojyzIADldmC5OPGcvNd1Pteo=
 github.com/flier/gohs v1.2.3/go.mod h1:MJr+IUI8QKDiE8lrDE4OhA++wRctvD9+UQB6GbOXf1c=
 github.com/git-pkgs/go-billy/v6 v6.0.0-alpha.2.0.20260906202738-23c9d86c8d17 h1:PzXJag1pssE3Hhl/tccdaPOtz5j2eZyl1WyUmai71FU=
