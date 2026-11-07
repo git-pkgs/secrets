@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -86,6 +88,10 @@ func syncCorpus(root string, source corpusSource) error {
 	if !strings.Contains(string(corpus), "[[rules]]") {
 		return fmt.Errorf("source corpus contains no rules")
 	}
+	compressed, err := compressCorpus(corpus)
+	if err != nil {
+		return err
+	}
 	metadata, err := json.MarshalIndent(corpusSource{
 		Module: source.Module, Version: source.Version, Sum: source.Sum,
 	}, "", "  ")
@@ -96,7 +102,26 @@ func syncCorpus(root string, source corpusSource) error {
 	if err := writeAtomic(filepath.Join(root, "betterleaks", "config", "betterleaks.toml"), corpus); err != nil {
 		return err
 	}
+	if err := writeAtomic(filepath.Join(root, "betterleaks", "config", "betterleaks.toml.gz"), compressed); err != nil {
+		return err
+	}
 	return writeAtomic(filepath.Join(root, "betterleaks", "corpus.json"), metadata)
+}
+
+func compressCorpus(corpus []byte) ([]byte, error) {
+	var compressed bytes.Buffer
+	writer, err := gzip.NewWriterLevel(&compressed, gzip.BestCompression)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := writer.Write(corpus); err != nil {
+		_ = writer.Close()
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	return compressed.Bytes(), nil
 }
 
 func writeAtomic(path string, data []byte) error {

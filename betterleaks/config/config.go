@@ -1,9 +1,12 @@
 package config
 
 import (
+	"bytes"
+	"compress/gzip"
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strings"
@@ -18,13 +21,30 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/version"
 )
 
-var (
-	//go:embed betterleaks.toml
-	DefaultConfig string
-)
+//go:embed betterleaks.toml.gz
+var compressedDefaultConfig []byte
+
+var DefaultConfig = mustDecompressConfig(compressedDefaultConfig)
 
 const maxExtendDepth = 2
 const DefaultRuleSpecificity = 100
+
+func mustDecompressConfig(data []byte) string {
+	config, err := decompressConfig(data)
+	if err != nil {
+		panic(err)
+	}
+	return config
+}
+
+func decompressConfig(data []byte) (string, error) {
+	reader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	decompressed, readErr := io.ReadAll(reader)
+	return string(decompressed), errors.Join(readErr, reader.Close())
+}
 
 type rawConfig struct {
 	Title       string    `toml:"title"`

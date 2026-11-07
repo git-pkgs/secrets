@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -46,6 +49,24 @@ func TestSyncCorpus(t *testing.T) {
 	if string(gotCorpus) != string(wantCorpus) {
 		t.Fatalf("corpus = %q, want %q", gotCorpus, wantCorpus)
 	}
+	compressed, err := os.ReadFile(filepath.Join(root, "betterleaks", "config", "betterleaks.toml.gz"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader, err := gzip.NewReader(bytes.NewReader(compressed))
+	if err != nil {
+		t.Fatal(err)
+	}
+	decompressed, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := reader.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(decompressed, wantCorpus) {
+		t.Fatalf("compressed corpus = %q, want %q", decompressed, wantCorpus)
+	}
 	metadata, err := os.ReadFile(filepath.Join(root, "betterleaks", "corpus.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -56,5 +77,20 @@ func TestSyncCorpus(t *testing.T) {
 	}
 	if gotSource.Module != wantSource.Module || gotSource.Version != wantSource.Version || gotSource.Sum != wantSource.Sum {
 		t.Fatalf("metadata = %+v, want %+v", gotSource, wantSource)
+	}
+}
+
+func TestCompressCorpusIsDeterministic(t *testing.T) {
+	corpus := []byte("[[rules]]\nid = \"example\"\n")
+	first, err := compressCorpus(corpus)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := compressCorpus(corpus)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(first, second) {
+		t.Fatal("compressCorpus output changed between calls")
 	}
 }

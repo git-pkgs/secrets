@@ -128,6 +128,22 @@ func TestDefaultConfigExpressionsCompileWithExpr(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestDecompressConfigRejectsInvalidData(t *testing.T) {
+	if _, err := decompressConfig([]byte("not gzip")); err == nil {
+		t.Fatal("decompressConfig accepted invalid data")
+	}
+}
+
+func TestEmbeddedDefaultConfigMatchesSource(t *testing.T) {
+	source, err := os.ReadFile("betterleaks.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if DefaultConfig != string(source) {
+		t.Fatal("embedded default config differs from betterleaks.toml")
+	}
+}
+
 func TestGenericRuleConfidence(t *testing.T) {
 	cfg, err := Default()
 	require.NoError(t, err)
