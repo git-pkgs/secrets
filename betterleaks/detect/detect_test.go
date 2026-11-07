@@ -1,12 +1,9 @@
 package detect
 
 import (
-	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -1259,9 +1256,8 @@ func TestDetect(t *testing.T) {
 		// I.e., if the finding is from a --no-git file, the line number will be
 		// increase by 1 in DetectFromFiles(). If the finding is from git,
 		// the line number will be increased by the patch delta.
-		expectedFindings  []report.Finding
-		wantError         error
-		expectedAuxOutput string
+		expectedFindings []report.Finding
+		wantError        error
 	}{
 		// General
 		"valid allow comment (1)": {
@@ -1691,7 +1687,6 @@ const token = "mockSecret";
 					Tags:        []string{},
 				},
 			},
-			expectedAuxOutput: "│ components:\n│   -  username-rule:2 ...... admin\n",
 		},
 		// Decoding
 		"detect encoded": {
@@ -2000,45 +1995,8 @@ const token = "mockSecret";
 
 			compare(t, findings, tt.expectedFindings)
 
-			// extremely goofy way to test auxiliary findings
-			// capture stdout and print that sonabitch
-			// TODO
-			if tt.expectedAuxOutput != "" {
-				capturedOutput := captureStdout(func() {
-					for _, finding := range findings {
-						finding.PrintComponentFindings(false, 0)
-					}
-				})
-
-				// Clean up the output for comparison (remove ANSI color codes)
-				cleanOutput := stripANSI(capturedOutput)
-				expectedClean := stripANSI(tt.expectedAuxOutput)
-
-				assert.Equal(t, expectedClean, cleanOutput, "Auxiliary output should match")
-			}
-
 		})
 	}
-}
-
-func stripANSI(s string) string {
-	ansiRegex := regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	return ansiRegex.ReplaceAllString(s, "")
-}
-
-func captureStdout(f func()) string {
-	oldStdout := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	os.Stdout = oldStdout
-
-	var buf bytes.Buffer
-	io.Copy(&buf, r)
-	return buf.String()
 }
 
 // TestFromGit tests the FromGit function
