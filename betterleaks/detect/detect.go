@@ -29,7 +29,6 @@ import (
 	"github.com/git-pkgs/secrets/betterleaks/report"
 	sources "github.com/git-pkgs/secrets/betterleaks/source"
 
-	"github.com/fatih/semgroup"
 	"github.com/rs/zerolog"
 	"golang.org/x/exp/maps"
 )
@@ -164,76 +163,15 @@ type Detector struct {
 	// before they are returned because the pool is shared by concurrent scans.
 	candidatePool sync.Pool
 
-	// TODO remove this in v2
-	// SkipFindingAppend skips populating the deprecated detector-level findings
-	// slice while consuming results from Run.
-	//
-	// This keeps Run callers from retaining a second compatibility copy of the
-	// same findings when they are already consuming results directly.
-	//
-	// DetectSource intentionally ignores this flag to preserve its historical
-	// return contract.
-	SkipFindingAppend bool
-
-	// ----------------------------------------------------------------
-	// DEPRECATED fields below, to be removed in the next major version
-	//
-	//
-	// report-related settings.
-	// Deprecated: detect should not handle reporting
-	ReportPath string
-	// Deprecated: detect should not handle reporting
-	Reporter report.Reporter
-	// findings is a slice of report.Findings. This is the result
-	// of the detector's scan which can then be used to generate a
-	// report.
-	// Deprecated: findings are now emitted via the channel returned by Run.
-	// This slice is retained only for compatibility with deprecated callers and
-	// optional accumulation during Run when SkipFindingAppend is false.
-	findings []report.Finding
-
-	// findingsCh is created by DetectSource and carries all ready-to-display
-	// findings. A single consumer goroutine reads from it.
-	// Deprecated: findings are now emitted via the channel returned by Run;
-	// this field is only used for the legacy DetectSource method and will be removed in v2.
-	findingsCh chan report.Finding
-
 	// Redact is a flag to redact findings. This is exported
 	// so users using gitleaks as a library can set this flag
 	// without calling `detector.Start(cmd *cobra.Command)`
 	Redact uint
+}
 
-	// verbose is a flag to print findings
-	Verbose bool
-
-	// MaxArchiveDepth limits how deep the sources will explore nested archives
-	MaxArchiveDepth int
-
-	// files larger than this will be skipped
-	MaxTargetMegaBytes int
-
-	// followSymlinks is a flag to enable scanning symlink files
-	FollowSymlinks bool
-
-	// NoColor is a flag to disable color output
-	NoColor bool
-
-	// LegacyPrint uses the legacy key/value verbose format (typically with Verbose=true).
-	LegacyPrint bool
-
-	// commitMutex is to prevent concurrent access to the
-	// commit map when adding commits
-	// Deprecated: this is only used for logging in git scans and can be removed when the legacy git scan is removed in v2.
-	commitMutex *sync.Mutex
-
-	// commitMap is used to keep track of commits that have been scanned.
-	// This is only used for logging purposes and git scans.
-	// Deprecated: this is only used for logging in git scans and can be removed when the legacy git scan is removed in v2.
-	commitMap map[string]bool
-
-	// Sema (https://github.com/fatih/semgroup) controls the concurrency
-	// Deprecated: this is only used for git log workers and can be removed when the legacy git scan is removed in v2.
-	Sema *semgroup.Group
+// NewDetector creates a detector without validation.
+func NewDetector(cfg *config.Config) *Detector {
+	return NewDetectorContext(context.Background(), cfg, ValidationOptions{})
 }
 
 // NewDetectorContext creates a new Detector.
@@ -262,11 +200,9 @@ func NewDetectorContext(ctx context.Context, cfg *config.Config, valOpts Validat
 	keywords := maps.Keys(cfg.Keywords)
 	d := &Detector{
 		gitleaksIgnore:         make(map[string]struct{}),
-		findings:               make([]report.Finding, 0),
 		ValidationCounts:       make(map[report.ValidationStatus]int),
 		Config:                 cfg,
 		prefilter:              ahocorasick.Compile(keywords, true),
-		Sema:                   semgroup.NewGroup(ctx, 40),
 		exprRuntime:            exprRuntime,
 		validationRuntime:      validationRuntime,
 		validationPrograms:     make(map[string]exprruntime.Program),
@@ -624,9 +560,6 @@ func (d *Detector) Run(ctx context.Context, source sources.Source) iter.Seq[Resu
 					}
 				}
 
-				if !d.SkipFindingAppend {
-					d.findings = append(d.findings, res.Finding)
-				}
 			}
 
 			if !yield(res) {
@@ -714,6 +647,16 @@ func (d *Detector) DetectString(content string) []report.Finding {
 	return d.DetectFragment(context.Background(), sources.Fragment{
 		Raw: content,
 	})
+}
+
+// Detect scans one fragment without cancellation.
+func (d *Detector) Detect(fragment sources.Fragment) []report.Finding {
+	return d.DetectFragment(context.Background(), fragment)
+}
+
+// DetectContext scans one fragment with cancellation.
+func (d *Detector) DetectContext(ctx context.Context, fragment sources.Fragment) []report.Finding {
+	return d.DetectFragment(ctx, fragment)
 }
 
 // DetectFragment scans one fragment with its source attributes.
