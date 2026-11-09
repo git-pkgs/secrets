@@ -10,7 +10,7 @@ require (
 	github.com/git-pkgs/sarif v0.1.3
 	github.com/git-pkgs/scan v0.1.1
 	github.com/google/go-cmp v0.7.0
-	github.com/hashicorp/go-version v1.7.0
+	github.com/hashicorp/go-version v1.9.0
 	github.com/pelletier/go-toml/v2 v2.3.1
 	github.com/pkoukk/tiktoken-go v0.1.8
 	github.com/rrethy/ahocorasick v1.0.0
