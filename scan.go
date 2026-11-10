@@ -54,15 +54,7 @@ func scanCmd(ctx context.Context, repo string) error {
 	if ruleTimings != "" {
 		timings = detect.NewRuleTimingCollector()
 	}
-	scanner, err := scanner.New(ctx, scanner.Options{
-		Validation: detect.ValidationOptions{
-			Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,
-			MaxRequestsPerTarget: validationMaxRequestsPerTarget,
-			RequestsPerSecond:    validationRequestsPerSecond,
-			ValidationEnvVars:    validationEnvVars,
-		},
-		RuleTimings: timings,
-	})
+	scanner, err := newScanner(ctx, timings)
 	if err != nil {
 		return err
 	}
@@ -129,6 +121,18 @@ func scanCmd(ctx context.Context, repo string) error {
 		return findingExitError{code: findingExitCode}
 	}
 	return nil
+}
+
+func newScanner(ctx context.Context, timings *detect.RuleTimingCollector) (*scanner.Scanner, error) {
+	return scanner.New(ctx, scanner.Options{
+		Validation: detect.ValidationOptions{
+			Enabled: validate, Workers: validationWorkers, Timeout: validateTimeout,
+			MaxRequestsPerTarget: validationMaxRequestsPerTarget,
+			RequestsPerSecond:    validationRequestsPerSecond,
+			ValidationEnvVars:    validationEnvVars,
+		},
+		RuleTimings: timings,
+	})
 }
 
 func writeRuleTimings(path string, timings *detect.RuleTimingCollector) error {

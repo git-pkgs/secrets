@@ -619,6 +619,34 @@ func TestScanBrokenOutputIsOperationalFailure(t *testing.T) {
 	}
 }
 
+func TestScanDir(t *testing.T) {
+	content := "token = " + fakeGitHubPAT + "\n"
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "sub"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "sub", "config.env"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	stdout, _ := cliSplitFindings(t, "scan", "--dir", dir, "--format", "json")
+	findings := parseJSONFindings(t, stdout)
+	if len(findings) != 1 || findings[0].Rule != "github-pat" || findings[0].Path != "sub/config.env" || findings[0].Commit != "" {
+		t.Fatalf("findings = %+v", findings)
+	}
+
+	// The blob ID matches what a repository scan reports for the same content.
+	repo := repository(t)
+	commitFile(t, repo, "sub/config.env", content, "add config")
+	repoStdout, _ := cliSplitFindings(t, "scan", repo, "--format", "json")
+	if repoFindings := parseJSONFindings(t, repoStdout); len(repoFindings) != 1 || repoFindings[0].Blob != findings[0].Blob {
+		t.Fatalf("dir blob %q, repo findings %+v", findings[0].Blob, repoFindings)
+	}
+
+	if _, stderr, code := cliResult(t, "scan", "--dir", dir, repo); code != 1 || !strings.Contains(stderr, "cannot be combined") {
+		t.Fatalf("--dir with a repository: exit %d, stderr %q", code, stderr)
+	}
+}
+
 func TestScanSkipsBinary(t *testing.T) {
 	repo := repository(t)
 	commitFile(t, repo, "blob.bin", "\x00\x01\x02"+fakeGitHubPAT, "binary")

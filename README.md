@@ -36,6 +36,18 @@ Scan the current repository or pass another repository path:
 ./secrets scan /path/to/repository
 ```
 
+Pass `--dir` to scan the files in a plain directory instead, such as an
+extracted archive or a vendored tree:
+
+```sh
+./secrets scan --dir /path/to/directory
+```
+
+A directory scan reads regular files only and doesn't follow symlinks. Paths
+are relative to the directory, path rules and `--max-blob-size` apply as they
+do for a repository, and there is no commit. The blob column holds the Git
+blob ID of the file's content, the same ID a repository scan reports.
+
 Findings are written to standard output, and progress and summary statistics,
 including the active prefilter engine, to standard error. A clean scan exits
 with status 0, while a scan with findings exits with status 1 by default. Use
@@ -118,6 +130,10 @@ passed the prefilter. The package applies no blob size limit, traverses no
 history, and maintains no OID cache. Callers handle those steps and attribute
 findings to commits and paths. Cache keys must account for paths when using
 path-based rules or exclusions.
+
+`ScanFS` walks an `fs.FS`, such as `os.DirFS(dir)`, and scans each regular
+file with its slash-separated path. `FSOptions` sets the worker count and a
+file size limit, and the visit callback is called for one file at a time.
 
 Validation is disabled by default. Set `Options.Validation.Enabled` to enable
 provider requests, with limits and timeouts in `Options.Validation`.

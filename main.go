@@ -38,6 +38,7 @@ var (
 	memProfile                     string
 	ruleTimings                    string
 	findingExitCode                int
+	scanDir                        string
 )
 
 func main() {
@@ -67,9 +68,16 @@ func newRootCommand() *cobra.Command {
 		Short: "Scan every blob in the repository's history",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if scanDir != "" {
+				if len(args) > 0 {
+					return fmt.Errorf("--dir and a repository argument cannot be combined")
+				}
+				return scanDirCmd(cmd.Context(), scanDir)
+			}
 			return scanCmd(cmd.Context(), repoArg(args))
 		},
 	}
+	scan.Flags().StringVar(&scanDir, "dir", "", "scan the files in a plain directory instead of a repository's history")
 	scan.Flags().IntVar(&workers, "workers", runtime.GOMAXPROCS(0), "concurrent blob readers")
 	scan.Flags().Int64Var(&maxBlobSize, "max-blob-size", defaultMaxBlobSize, "skip blobs larger than this many bytes")
 	scan.Flags().StringVar(&format, "format", "tsv", "output format: tsv, json, sarif")
