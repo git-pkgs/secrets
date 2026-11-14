@@ -72,6 +72,9 @@ func newRootCommand() *cobra.Command {
 				if len(args) > 0 {
 					return fmt.Errorf("--dir and a repository argument cannot be combined")
 				}
+				if !attribute {
+					return fmt.Errorf("--dir and --attribute=false cannot be combined: a directory scan always has paths")
+				}
 				return scanDirCmd(cmd.Context(), scanDir)
 			}
 			return scanCmd(cmd.Context(), repoArg(args))

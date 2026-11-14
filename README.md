@@ -47,6 +47,8 @@ A directory scan reads regular files only and doesn't follow symlinks. Paths
 are relative to the directory, path rules and `--max-blob-size` apply as they
 do for a repository, and there is no commit. The blob column holds the Git
 blob ID of the file's content, the same ID a repository scan reports.
+`--attribute=false` can't be combined with `--dir`, since a directory scan
+always has paths.
 
 Findings are written to standard output, and progress and summary statistics,
 including the active prefilter engine, to standard error. A clean scan exits
@@ -133,7 +135,8 @@ path-based rules or exclusions.
 
 `ScanFS` walks an `fs.FS`, such as `os.DirFS(dir)`, and scans each regular
 file with its slash-separated path. `FSOptions` sets the worker count and a
-file size limit, and the visit callback is called for one file at a time.
+file size limit; a file that grows past the limit while it is being read is
+reported through `Skipped`. The visit callback is called for one file at a time.
 
 Validation is disabled by default. Set `Options.Validation.Enabled` to enable
 provider requests, with limits and timeouts in `Options.Validation`.

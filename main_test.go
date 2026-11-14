@@ -645,6 +645,9 @@ func TestScanDir(t *testing.T) {
 	if _, stderr, code := cliResult(t, "scan", "--dir", dir, repo); code != 1 || !strings.Contains(stderr, "cannot be combined") {
 		t.Fatalf("--dir with a repository: exit %d, stderr %q", code, stderr)
 	}
+	if _, stderr, code := cliResult(t, "scan", "--dir", dir, "--attribute=false"); code != 1 || !strings.Contains(stderr, "cannot be combined") {
+		t.Fatalf("--dir with --attribute=false: exit %d, stderr %q", code, stderr)
+	}
 }
 
 func TestScanSkipsBinary(t *testing.T) {
