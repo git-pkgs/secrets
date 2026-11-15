@@ -44,9 +44,9 @@ func sarifEmitter(w io.Writer, cfg *config.Config, redact bool) (emitFunc, func(
 		}
 		result.Level = "error"
 		result.Message = sarif.Message{Text: r.Description}
-		result.PartialFingerprints = map[string]string{
-			"blob":   f.Blob,
-			"commit": f.Commit,
+		result.PartialFingerprints = map[string]string{"blob": f.Blob}
+		if f.Commit != "" {
+			result.PartialFingerprints["commit"] = f.Commit
 		}
 		properties := sarif.PropertyBag{}
 		if r.ValidationStatus != "" {

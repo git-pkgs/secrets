@@ -619,6 +619,69 @@ func TestScanBrokenOutputIsOperationalFailure(t *testing.T) {
 	}
 }
 
+func TestScanDir(t *testing.T) {
+	content := "token = " + fakeGitHubPAT + "\n"
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "sub"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "sub", "config.env"), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "big.env"), []byte(content+strings.Repeat("x", 200)), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "leak.env")
+	if err := os.WriteFile(outside, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(dir, "link.env")); err != nil {
+		t.Fatal(err)
+	}
+	stdout, stderr := cliSplitFindings(t, "scan", "--dir", dir, "--max-blob-size", "100", "--format", "json")
+	findings := parseJSONFindings(t, stdout)
+	if len(findings) != 1 || findings[0].Rule != "github-pat" || findings[0].Path != "sub/config.env" || findings[0].Commit != "" {
+		t.Fatalf("findings = %+v", findings)
+	}
+	if !strings.Contains(stderr, "secrets: 2 blobs, 1 scanned, 1 skipped;") {
+		t.Fatalf("summary should count big.env as skipped and not count link.env:\n%s", stderr)
+	}
+
+	sarifOut, _ := cliSplitFindings(t, "scan", "--dir", dir, "--max-blob-size", "100", "--format", "sarif")
+	var doc struct {
+		Runs []struct {
+			Results []struct{ PartialFingerprints map[string]string }
+		}
+	}
+	if err := json.Unmarshal([]byte(sarifOut), &doc); err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.Runs) != 1 || len(doc.Runs[0].Results) != 1 {
+		t.Fatalf("sarif results:\n%s", sarifOut)
+	}
+	if fp := doc.Runs[0].Results[0].PartialFingerprints; fp["blob"] != findings[0].Blob || len(fp) != 1 {
+		t.Fatalf("partialFingerprints = %v, want only the blob", fp)
+	}
+
+	// The blob ID matches what a repository scan reports for the same content.
+	repo := repository(t)
+	commitFile(t, repo, "sub/config.env", content, "add config")
+	repoStdout, _ := cliSplitFindings(t, "scan", repo, "--format", "json")
+	if repoFindings := parseJSONFindings(t, repoStdout); len(repoFindings) != 1 || repoFindings[0].Blob != findings[0].Blob {
+		t.Fatalf("dir blob %q, repo findings %+v", findings[0].Blob, repoFindings)
+	}
+
+	if _, stderr, code := cliResult(t, "scan", "--dir", dir, repo); code != 1 || !strings.Contains(stderr, "cannot be combined") {
+		t.Fatalf("--dir with a repository: exit %d, stderr %q", code, stderr)
+	}
+	if _, stderr, code := cliResult(t, "scan", "--dir", dir, "--attribute=false"); code != 1 || !strings.Contains(stderr, "cannot be combined") {
+		t.Fatalf("--dir with --attribute=false: exit %d, stderr %q", code, stderr)
+	}
+	if _, stderr, code := cliResult(t, "scan", "--dir", dir, "--max-blob-size", "0"); code != 1 || !strings.Contains(stderr, "--max-blob-size of at least 1") {
+		t.Fatalf("--dir with --max-blob-size 0: exit %d, stderr %q", code, stderr)
+	}
+}
+
 func TestScanSkipsBinary(t *testing.T) {
 	repo := repository(t)
 	commitFile(t, repo, "blob.bin", "\x00\x01\x02"+fakeGitHubPAT, "binary")
