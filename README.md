@@ -43,12 +43,13 @@ extracted archive or a vendored tree:
 ./secrets scan --dir /path/to/directory
 ```
 
-A directory scan reads regular files only and doesn't follow symlinks. Paths
-are relative to the directory, path rules and `--max-blob-size` apply as they
-do for a repository, and there is no commit. The blob column holds the Git
-blob ID of the file's content, the same ID a repository scan reports.
-`--attribute=false` can't be combined with `--dir`, since a directory scan
-always has paths.
+A directory scan reads regular files only and doesn't follow symlinks, even
+one that replaces a file during the scan. Paths are relative to the directory,
+path rules and `--max-blob-size` apply as they do for a repository, and there
+is no commit. The blob column holds the Git blob ID of the file's content, the
+same ID a repository scan reports. `--attribute=false` can't be combined with
+`--dir`, since a directory scan always has paths, and `--max-blob-size` has to
+be at least 1.
 
 Findings are written to standard output, and progress and summary statistics,
 including the active prefilter engine, to standard error. A clean scan exits
@@ -133,8 +134,9 @@ history, and maintains no OID cache. Callers handle those steps and attribute
 findings to commits and paths. Cache keys must account for paths when using
 path-based rules or exclusions.
 
-`ScanFS` walks an `fs.FS`, such as `os.DirFS(dir)`, and scans each regular
-file with its slash-separated path. `FSOptions` sets the worker count and a
+`ScanFS` walks an `fs.FS`, such as `root.FS()` from `os.OpenRoot(dir)`, which
+refuses to open a symlink that leads out of the directory, and scans each
+regular file with its slash-separated path. `FSOptions` sets the worker count and a
 file size limit; a file that grows past the limit while it is being read is
 reported through `Skipped`. The visit callback is called for one file at a time.
 

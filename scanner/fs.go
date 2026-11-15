@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"io/fs"
+	"math"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -20,7 +21,6 @@ type FSOptions struct {
 // File is the result of scanning one file. Path is slash-separated and relative to the FS root.
 type File struct {
 	Path   string
-	Size   int64
 	Data   []byte
 	Result Result
 }
@@ -74,7 +74,7 @@ func (s *Scanner) ScanFS(ctx context.Context, fsys fs.FS, opts FSOptions, visit 
 			}
 			mu.Lock()
 			defer mu.Unlock()
-			return visit(File{Path: path, Size: int64(len(data)), Data: data, Result: result})
+			return visit(File{Path: path, Data: data, Result: result})
 		})
 		return nil
 	})
@@ -84,10 +84,10 @@ func (s *Scanner) ScanFS(ctx context.Context, fsys fs.FS, opts FSOptions, visit 
 	return walkErr
 }
 
-// readFile reads path, reading at most limit+1 bytes when limit is positive; fits is false when the file is
-// longer than limit, which can happen when it grew after the walk read its size.
+// readFile reads path, reading at most limit+1 bytes when limit is positive and below math.MaxInt64; fits is
+// false when the file is longer than limit, which can happen when it grew after the walk read its size.
 func readFile(fsys fs.FS, path string, limit int64) (data []byte, fits bool, err error) {
-	if limit <= 0 {
+	if limit <= 0 || limit == math.MaxInt64 {
 		data, err = fs.ReadFile(fsys, path)
 		return data, err == nil, err
 	}

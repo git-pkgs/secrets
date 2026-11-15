@@ -75,6 +75,9 @@ func newRootCommand() *cobra.Command {
 				if !attribute {
 					return fmt.Errorf("--dir and --attribute=false cannot be combined: a directory scan always has paths")
 				}
+				if maxBlobSize < 1 {
+					return fmt.Errorf("--dir needs --max-blob-size of at least 1, got %d", maxBlobSize)
+				}
 				return scanDirCmd(cmd.Context(), scanDir)
 			}
 			return scanCmd(cmd.Context(), repoArg(args))

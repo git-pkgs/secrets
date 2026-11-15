@@ -18,11 +18,11 @@ func scanDirCmd(ctx context.Context, dir string) error {
 	if err := validateScanOptions(); err != nil {
 		return err
 	}
-	if info, err := os.Stat(dir); err != nil {
+	root, err := os.OpenRoot(dir)
+	if err != nil {
 		return err
-	} else if !info.IsDir() {
-		return fmt.Errorf("--dir %s: not a directory", dir)
 	}
+	defer func() { _ = root.Close() }()
 	cfg, err := config.Default()
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func scanDirCmd(ctx context.Context, dir string) error {
 	if err != nil {
 		return err
 	}
-	err = sc.ScanFS(ctx, os.DirFS(dir), scanner.FSOptions{
+	err = sc.ScanFS(ctx, root.FS(), scanner.FSOptions{
 		Workers:     workers,
 		MaxFileSize: maxBlobSize,
 		Skipped:     func(string) { stats.total++; stats.skipped++ },

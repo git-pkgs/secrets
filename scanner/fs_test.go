@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io/fs"
+	"math"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -49,6 +50,27 @@ func TestScanFS(t *testing.T) {
 	}
 	if len(found) != 2 || !slices.Equal(found["app/config.php"], []string{"freemius-secret-key"}) || !slices.Equal(found["token.env"], []string{"github-pat"}) {
 		t.Errorf("findings %v", found)
+	}
+}
+
+func TestScanFSMaxInt64LimitReadsTheFile(t *testing.T) {
+	s := newScanner(t, scanner.Options{})
+	fsys := fstest.MapFS{"token.env": {Data: []byte("token = " + token + "\n")}}
+	var rules []string
+	err := s.ScanFS(context.Background(), fsys, scanner.FSOptions{
+		MaxFileSize: math.MaxInt64,
+		Skipped:     func(path string) { t.Errorf("skipped %s", path) },
+	}, func(f scanner.File) error {
+		for _, finding := range f.Result.Findings {
+			rules = append(rules, finding.RuleID)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Equal(rules, []string{"github-pat"}) {
+		t.Errorf("findings %q, want github-pat", rules)
 	}
 }
 
